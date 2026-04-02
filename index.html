@@ -1,0 +1,2198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Energy Guide - Complete Platform</title>
+
+<!-- External Libraries -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<!-- Stylesheets -->
+<link rel="stylesheet" href="css/main.css"/>
+<link rel="stylesheet" href="css/patches-panel-toggle-fix.css"/>
+
+<!-- Supabase Init (must run before DOMContentLoaded handlers in other scripts) -->
+<script src="js/supabase-init.js"></script>
+
+</head>
+<body>
+<div class="app-container">
+<div class="top-bar user" id="topBar">
+<button class="back-btn" id="backBtn" onclick="goBack()" style="visibility: hidden;">← Back</button>
+<h2 id="topBarTitle">Energy Guide</h2>
+<button class="logout-btn" id="logoutBtn" onclick="logout()" style="display: none;">Logout</button>
+</div>
+<div class="content">
+<!-- WELCOME SCREEN WITH 3 ROLE CHOICES -->
+<div class="screen active" id="welcome">
+<div style="text-align: center; padding: 20px 0;">
+<div class="sun-icon">☀️</div>
+<h1>Energy Guide Platform</h1>
+<p class="subtitle">Complete Solar Solution - All Portals</p>
+</div>
+<div class="role-card" onclick="selectRole('user')">
+<div class="emoji-badge" style="background: rgba(10, 126, 164, 0.1)">🔋</div>
+<div style="flex: 1;">
+<div style="font-weight: 600; margin-bottom: 4px;">I want solar for my home/business</div>
+<div style="font-size: 13px; color: #687076;">Simple calculator with instant quotes</div>
+</div>
+<div style="width: 28px; height: 28px; background: #0a7ea4; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: 700;">›</div>
+</div>
+<div class="role-card" onclick="selectRole('installer')">
+<div class="emoji-badge" style="background: rgba(34, 197, 94, 0.1)">🛠</div>
+<div style="flex: 1;">
+<div style="font-weight: 600; margin-bottom: 4px;">I install solar systems</div>
+<div style="font-size: 13px; color: #687076;">Professional calculator with cable lengths</div>
+</div>
+<div style="width: 28px; height: 28px; background: #22C55E; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: 700;">›</div>
+</div>
+<div class="role-card" onclick="selectRole('vendor')">
+<div class="emoji-badge" style="background: rgba(245, 158, 11, 0.1)">🏪</div>
+<div style="flex: 1;">
+<div style="font-weight: 600; margin-bottom: 4px;">I sell solar equipment</div>
+<div style="font-size: 13px; color: #687076;">Product management with images</div>
+</div>
+<div style="width: 28px; height: 28px; background: #F59E0B; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: white; font-size: 18px; font-weight: 700;">›</div>
+</div>
+</div>
+<!-- USER PORTAL SCREENS -->
+<div class="screen" id="user-calculator"><h1>Solar Calculator</h1><p class="subtitle">Add your appliances for instant sizing</p>
+<div id="userAccountBar" style="display:none; background:#ffffff; border:1px solid #dbe4ee; border-radius:18px; padding:14px; margin-bottom:16px; box-shadow:0 8px 24px rgba(15,23,42,0.06);">
+  <div style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;">
+    <div style="min-width:0;">
+      <div id="userAccountBarTitle" style="font-weight:800; font-size:15px; color:#0f172a;">Guest mode</div>
+      <div id="userAccountBarText" style="font-size:13px; line-height:1.4; color:#475569; margin-top:2px;">Create a free account to save your system and continue later.</div>
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="btn btn-outline small-btn" id="userSignInBtn" onclick="openUserAuthModal('signin')">Sign In</button>
+      <button class="btn btn-primary small-btn" id="userCreateAccountBtn" onclick="openUserAuthModal('signup')">Create Free Account</button>
+      <button class="btn btn-outline small-btn" id="userSavedSystemsBtn" onclick="openUserSavedSystems()" style="display:none;">My Saved Systems</button>
+      <button class="btn btn-secondary small-btn" id="userSignOutBtn" onclick="handleUserSignOut()" style="display:none;">Sign Out</button>
+    </div>
+  </div>
+  <!-- Browse marketplace without calculation -->
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px;padding-top:12px;border-top:1px solid #e5e7eb;">
+    <button class="btn btn-outline small-btn" onclick="egOpenInstallerMarketplaceFrom('user-calculator')" style="font-size:12px;">
+      🛠 Find Installers
+    </button>
+    <button class="btn btn-outline small-btn" onclick="egOpenVendorMarketplaceFrom('user-calculator')" style="font-size:12px;">
+      🏪 Find Vendors
+    </button>
+  </div>
+</div>
+<button class="btn btn-secondary" onclick="showScreen('welcome')" style="margin-bottom: 20px;">
+          ← Back to Home
+        </button><div class="embedded-iframe-content" data-embedded-from-iframe="true">
+<header>
+  <div class="logo-sun">☀️
+</div>
+  <div class="logo-text">
+    <h1>Energy Guide</h1>
+    <p>Solar Sizing Calculator</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- LEFT: INPUT l4u_PANEL -->
+  <div class="left-panel">
+    <div class="section-label">Add Appliances</div>
+
+    <div class="add-form">
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Appliance Name</label>
+          <input type="text" id="l4u-inp-name" list="l4u-appliance-suggestions" placeholder="e.g. Standing Fan" />
+          <datalist id="l4u-appliance-suggestions"></datalist>
+        </div>
+        <div class="form-field">
+          <label>Watts (W)</label>
+          <input type="number" id="l4u-inp-watts" placeholder="65" min="0" />
+        </div>
+        <div class="form-field">
+          <label>Quantity</label>
+          <input type="number" id="l4u-inp-qty" placeholder="1" min="1" value="1" />
+        </div>
+        <div class="form-field">
+          <label>Hrs/Day</label>
+          <input type="number" id="l4u-inp-hours" placeholder="8" min="0" max="24" step="0.5" />
+        </div>
+        <div class="form-field">
+          <label>Fridge Mode</label>
+          <select id="l4u-inp-fridge-mode">
+            <option value="none" selected>—</option>
+            <option value="inverter_fridge">Inverter Fridge (35%)</option>
+            <option value="normal_fridge">Normal Fridge (50%)</option>
+            <option value="chest_freezer">Chest Freezer (60%)</option>
+          </select>
+        </div>
+      <button class="btn-add" onclick="l4u_addAppliance()">＋ Add Appliance</button>
+    </div>
+
+<div class="presets">
+      <div class="section-label">Quick Add</div>
+      <div class="l4u-preset-chips" id="l4u-preset-chips"></div>
+      <div style="font-size:12px;color:#6b7280;margin-top:8px;">Tap any appliance below to add it quickly.</div>
+    </div>
+
+    <div class="section-label">Your Appliances (<span id="l4u-count">0</span>)</div>
+    <div class="l4u-appliance-list" id="l4u-appliance-list">
+      <div class="empty-state">
+        <div class="icon">🏠</div>
+        <p>No appliances added yet.<br/>Use the form or quick-add chips above.</p>
+      </div>
+    </div>
+
+    <button class="btn-calculate" id="l4u-calc-btn" onclick="l4u_calculate()" disabled>
+      ⚡ Calculate My Solar System
+    </button>
+  </div>
+
+  <!-- RIGHT: RESULTS l4u_PANEL -->
+  <div class="right-panel">
+    <div class="results-placeholder" id="l4u-placeholder">
+      <div class="big-icon">☀️</div>
+      <p>Add your appliances and tap Calculate to size your solar system.</p>
+    </div>
+
+    <div class="l4u-results" id="l4u-results">
+      <!-- ERROR ALERT (if any) -->
+      <div id="l4u-error-alert" class="l4u-error-alert" style="display:none;"></div>
+
+      <div class="simple-summary">
+        <div class="section-label">Recommended Solar System</div>
+        <div class="simple-portal-note">Simple view for customers. Core system sizes are shown without the technical breakdown.</div>
+        <div class="simple-grid">
+          <div class="simple-card">
+            <div class="simple-label">Inverter</div>
+            <div class="simple-value accent" id="l4u-s-inverter-kva">—</div>
+            <div class="simple-sub" id="l4u-s-inverter-model">—</div>
+            <div class="simple-note" id="l4u-s-inverter-voltage">—</div>
+          </div>
+          <div class="simple-card">
+            <div class="simple-label">Solar Panels</div>
+            <div class="simple-value green" id="l4u-s-panels-count">—</div>
+            <div class="simple-sub" id="l4u-s-panels-size">—</div>
+            <div class="simple-note" id="l4u-s-panels-total">—</div>
+            <div class="simple-panel-toggle">
+              <button type="button" id="l4u-simple-panel-toggle-A" onclick="l4u_egTogglePanel('A')">Load Sustain</button>
+              <button type="button" id="l4u-simple-panel-toggle-B" onclick="l4u_egTogglePanel('B')">Full Recharge</button>
+            </div>
+            <div class="simple-note" id="l4u-s-panels-mode">—</div>
+          </div>
+          <div class="simple-card">
+            <div class="simple-label">Battery</div>
+            <div class="simple-value" id="l4u-s-battery-main">—</div>
+            <div class="simple-sub" id="l4u-s-battery-config">—</div>
+            <div class="simple-note" id="l4u-s-battery-alt">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="technical-only">
+      <div class="section-label">Load Analysis</div>
+      <div class="result-card">
+        <div class="stat-grid">
+          <div class="stat-item">
+            <div class="stat-label">Total Running Load</div>
+            <div class="stat-value accent" id="l4u-r-watts">—</div>
+            <div class="stat-unit">Watts</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Daily Consumption</div>
+            <div class="stat-value accent" id="l4u-r-kwh">—</div>
+            <div class="stat-unit">kWh / day</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Peak Surge Load</div>
+            <div class="stat-value" id="l4u-r-surge">—</div>
+            <div class="stat-unit">Watts</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-section simple-hide-section">
+        <div class="section-label">System Voltage & Inverter</div>
+        <div class="result-card">
+          <div class="stat-grid">
+            <div class="stat-item">
+              <div class="stat-label">System DC Voltage</div>
+              <div class="stat-value green" id="l4u-r-voltage">—</div>
+              <div class="stat-unit">Volts DC</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Recommended Inverter</div>
+              <div class="stat-value accent" id="l4u-r-kva">—</div>
+              <div class="stat-unit">kVA Hybrid Inverter</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Inverter Model</div>
+              <div class="stat-value" id="l4u-r-inv-model" style="font-size:14px;">—</div>
+              <div class="stat-unit">Recommended</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">AC Output Current</div>
+              <div class="stat-value" id="l4u-r-ac-amps">—</div>
+              <div class="stat-unit">Amps</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONFLICT BADGE -->
+      <div id="l4u-r-conflict-badge" style="display:none;background:#fff7ed;border:1px solid #fb923c;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#9a3412;line-height:1.6">
+        <strong style="display:block;margin-bottom:4px">⚡ System Voltage Upgraded</strong>
+        <span id="l4u-r-conflict-text"></span>
+      </div>
+
+      <div class="result-section simple-hide-section">
+        <div class="section-label">Battery Storage — LiFePO4</div>
+        <div id="l4u-r-battery-options" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px"></div>
+        <div style="margin-top:8px;font-size:11px;color:var(--muted);text-align:center">Tap an option to use it in your system selection</div>
+      </div>
+
+      <div class="result-section simple-hide-section">
+        <div class="section-label">Solar Panels</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px;">
+          <button type="button" id="l4u-panel-toggle-A" onclick="l4u_egTogglePanel('A')" style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-weight:700;cursor:pointer;">Load Sustain</button>
+          <button type="button" id="l4u-panel-toggle-B" onclick="l4u_egTogglePanel('B')" style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-weight:700;cursor:pointer;">Full Recharge</button>
+        </div>
+        <div class="result-card">
+          <div class="stat-grid">
+            <div class="stat-item"><div class="stat-label">Total PV Required</div><div class="stat-value accent" id="l4u-r-pv-watts">—</div><div class="stat-unit">Watts</div></div>
+            <div class="stat-item"><div class="stat-label">Number of Panels</div><div class="stat-value green" id="l4u-r-panels">—</div><div class="stat-unit">× 550W panels</div></div>
+            <div class="stat-item"><div class="stat-label">Est. Daily Generation</div><div class="stat-value green" id="l4u-r-gen">—</div><div class="stat-unit">kWh / day</div></div>
+            <div class="stat-item"><div class="stat-label">System Coverage</div><div class="stat-value green" id="l4u-r-coverage">—</div><div class="stat-unit">% of load</div></div>
+          </div>
+          <div class="solar-breakdown" id="l4u-r-solar-breakdown"></div>
+        </div>
+      </div>
+
+      </div><!-- end technical-only -->
+
+      <div class="result-section">
+        <div class="section-label">Cables &amp; Breakers</div>
+        <div class="result-card">
+          <table class="cable-table">
+            <thead><tr><th>Connection</th><th>Cable</th><th>Breaker</th></tr></thead>
+            <tbody id="l4u-r-cables"></tbody>
+          </table>
+        </div>
+      </div>
+
+      
+
+      </div>
+
+    </div><!-- end #results -->
+  </div><!-- end right-panel -->
+</div><!-- end container -->
+<div id="userPostCalcActions" style="display:none; margin-top: 16px;">
+<div class="info" style="margin-bottom: 14px;">✅ Your sizing is ready. Keep scrolling inside the calculator to view the full technical result, then choose what to do next.</div>
+<div id="savedSystemLoadedBanner" class="info" style="display:none; margin-bottom: 14px;">📂 Viewing saved system</div>
+<div style="display:grid; gap: 12px;">
+<button class="btn btn-warning" onclick="openUserCostScreen()" style="font-size:15px;">💰 View Cost &amp; Export</button>
+<button class="btn btn-success" onclick="egOpenInstallerMarketplaceFrom('user-calculator')">🛠 View Installers Near Me</button>
+<button class="btn btn-primary" onclick="egOpenVendorMarketplaceFrom('user-calculator')">🏪 View Vendors</button>
+</div>
+</div>
+</div>
+</div>
+<div class="screen" id="user-results">
+<h1>Your Solar System</h1>
+<p class="subtitle">Your sizing is ready. Choose what you want to do next.</p>
+<div class="grid" style="margin-bottom: 20px;">
+<div class="result-card" style="text-align: left;">
+<div class="result-label">Inverter</div>
+<div class="result-value" id="userResInverter" style="font-size: 24px;">-</div>
+</div>
+<div class="result-card" style="text-align: left;">
+<div class="result-label">Solar Panels</div>
+<div class="result-value" id="userResPanels" style="font-size: 24px;">-</div>
+</div>
+<div class="result-card" style="text-align: left;">
+<div class="result-label">Battery</div>
+<div class="result-value" id="userResBatteries" style="font-size: 24px;">-</div>
+</div>
+<div class="result-card" style="text-align: left;">
+<div class="result-label">Daily Energy</div>
+<div class="result-value" id="userResEnergy" style="font-size: 24px;">-</div>
+</div>
+</div>
+<div class="calc-section">
+<div class="calc-title">Sizing Summary</div>
+<div class="success" id="userSystemDetails"></div>
+</div>
+<div class="info">
+          ✅ Your system has been sized. You can now view the cost, browse installers near you, or browse vendors.
+        </div>
+<div style="display: grid; gap: 12px; margin-top: 20px;">
+<button class="btn btn-warning" onclick="openUserCostScreen()" style="font-size:15px;">💰 View Cost &amp; Export</button>
+<button class="btn btn-success" onclick="openInstallerMarketplace()">🛠 View Installers Near Me</button>
+<button class="btn btn-primary" onclick="openVendorMarketplace()">🏪 View Vendors</button>
+</div>
+<div class="grid" style="margin-top: 16px;">
+<button class="btn btn-outline" onclick="showScreen('user-calculator')">← Back to Calculator</button>
+<button class="btn btn-outline" onclick="showScreen('welcome')">🏠 Home</button>
+</div>
+</div>
+<div class="screen" id="user-cost-breakdown">
+<h1>Estimated Cost</h1>
+<p class="subtitle">Item-by-item estimate based on your current sizing result</p>
+<div class="cost-total">
+<span>Final Estimated Cost</span>
+<span id="userTotalCost">₦0</span>
+</div>
+<div class="grid" style="margin-bottom: 16px;">
+<div class="result-card" style="text-align:left;"><div class="result-label">Panels</div><div class="result-value" id="costPanels" style="font-size:22px;">₦0</div></div>
+<div class="result-card" style="text-align:left;"><div class="result-label">Inverter</div><div class="result-value" id="costInverter" style="font-size:22px;">₦0</div></div>
+<div class="result-card" style="text-align:left;"><div class="result-label">Battery</div><div class="result-value" id="costBattery" style="font-size:22px;">₦0</div></div>
+</div>
+<div class="calc-section">
+<div class="calc-title">Equipment Breakdown Included in Final Total</div>
+<table>
+<thead><tr><th>Item</th><th>Details</th><th>Cost</th></tr></thead>
+<tbody id="costBreakdownBody"><tr><td colspan="3">No cost calculated yet.</td></tr></tbody>
+</table>
+</div>
+<div class="calc-section">
+<div class="calc-title">Recommended Breakers &amp; Cable Reference</div>
+<table>
+<thead><tr><th>Item</th><th>Details</th><th>Price</th></tr></thead>
+<tbody id="costReferenceBody"><tr><td colspan="3">No reference items yet.</td></tr></tbody>
+</table>
+</div>
+<div class="calc-section">
+<div class="calc-title">Cost Notes</div>
+<div class="info" id="costNotes">Final total covers core equipment only. Breakers and cable prices are shown separately and remain subject to installer site verification.</div>
+</div>
+<div style="display:grid; gap: 12px;">
+<button class="btn btn-warning" onclick="shareSystemWhatsApp()" style="font-size:15px;">📲 Share via WhatsApp</button>
+<button class="btn btn-outline" onclick="downloadSystemPDF()" style="color:#0a7ea4;border-color:#0a7ea4;">📄 Download PDF Report</button>
+<button class="btn btn-primary" onclick="saveCurrentSystemForUser()">💾 Save This System</button>
+<button class="btn btn-success" onclick="egOpenInstallerMarketplaceFrom('user-cost-breakdown')">🛠 View Installers Near Me</button>
+<button class="btn btn-primary" onclick="egOpenVendorMarketplaceFrom('user-cost-breakdown')">🏪 View Vendors</button>
+<button class="btn btn-secondary" onclick="openUserSavedSystems()">📂 My Saved Systems</button>
+<button class="btn btn-secondary" onclick="showScreen('user-calculator')">← Back to Calculator</button>
+</div>
+</div>
+<div class="screen" id="user-saved-systems">
+<h1>My Saved Systems</h1>
+<p class="subtitle">Saved calculations linked to your free account</p>
+<div class="calc-section">
+<div class="calc-title">Saved Systems</div>
+<div id="userSavedSystemsList"><div class="info">Sign in to view saved systems.</div></div>
+</div>
+<div style="display:grid; gap: 12px;">
+<button class="btn btn-secondary" onclick="showScreen('user-calculator')">← Back to Calculator</button>
+</div>
+</div>
+
+</div>
+<div class="screen" id="installer-marketplace">
+<h1>Installers Near You</h1>
+<p class="subtitle">Browse installers in your state before sending a quote request</p>
+<div class="calc-section">
+<div class="calc-title">Location Filter</div>
+<div class="grid">
+<div class="form-group">
+<label>Your State</label>
+<select id="installerMarketplaceState" onchange="loadInstallerMarketplace()"></select>
+</div>
+</div>
+<div class="info" id="installerMarketplaceNotice">Choose your state to browse installers near you.</div>
+</div>
+<div class="calc-section">
+<div class="calc-title">Available Installers</div>
+<div id="installerMarketplaceList"><div class="info">No installer list loaded yet.</div></div>
+</div>
+<div style="display:grid; gap:10px; margin-top:16px;">
+<button class="btn btn-outline" onclick="egMarketplaceBack('installer')">← Back</button>
+</div>
+</div>
+<div class="screen" id="vendor-marketplace">
+<h1>Vendors</h1>
+<p class="subtitle">Browse vendors in your state before sending a product request</p>
+<div class="calc-section">
+<div class="calc-title">Location Filter</div>
+<div class="grid">
+<div class="form-group">
+<label>Your State</label>
+<select id="vendorMarketplaceState" onchange="loadVendorMarketplace()"></select>
+</div>
+</div>
+<div class="info" id="vendorMarketplaceNotice">Choose your state to browse vendors available to you.</div>
+</div>
+<div class="calc-section">
+<div class="calc-title">Available Vendors</div>
+<div id="vendorMarketplaceList"><div class="info">No vendor list loaded yet.</div></div>
+</div>
+<div style="display:grid; gap:10px; margin-top:16px;">
+<button class="btn btn-outline" onclick="egMarketplaceBack('vendor')">← Back</button>
+</div>
+</div>
+<div class="screen" id="submit-lead">
+<h1 id="leadFlowTitle">Get Matched Installers</h1>
+<p class="subtitle" id="leadFlowSubtitle">Tell us a few details so we can match you properly</p>
+<div class="info" id="leadSelectedTargetSummary" style="display:none; margin-bottom: 16px;"></div>
+<div class="calc-section">
+<div class="calc-title">Your Contact Information</div>
+<div class="form-group">
+<label>Full Name *</label>
+<input id="leadName" placeholder="John Doe" type="text"/>
+<div class="error-message" id="leadNameError"></div>
+</div>
+<div class="form-group">
+<label>Phone Number *</label>
+<input id="leadPhone" placeholder="+234 800 000 0000" type="tel"/>
+<div class="error-message" id="leadPhoneError"></div>
+</div>
+<div class="form-group">
+<label>Email *</label>
+<input id="leadEmail" placeholder="john@example.com" type="email"/>
+<div class="error-message" id="leadEmailError"></div>
+</div>
+<div class="grid">
+<div class="form-group">
+<label>State *</label>
+<select id="leadState"></select>
+<div class="error-message" id="leadStateError"></div>
+</div>
+<div class="form-group">
+<label>City / Area *</label>
+<input id="leadCity" placeholder="Nassarawa / Kano Municipal" type="text"/>
+<div class="error-message" id="leadCityError"></div>
+</div>
+</div>
+<div class="grid">
+<div class="form-group">
+<label>Project Type *</label>
+<select id="leadProjectType">
+<option value="">Select project type</option>
+<option value="home">Home</option>
+<option value="business">Business</option>
+</select>
+<div class="error-message" id="leadProjectTypeError"></div>
+</div>
+<div class="form-group" id="leadBudgetGroup">
+<label id="leadBudgetLabel">Budget Range</label>
+<select id="leadBudgetRange">
+<option value="">Prefer not to say</option>
+<option value="under_1m">Under ₦1m</option>
+<option value="1m_3m">₦1m - ₦3m</option>
+<option value="3m_5m">₦3m - ₦5m</option>
+<option value="5m_10m">₦5m - ₦10m</option>
+<option value="above_10m">Above ₦10m</option>
+</select>
+</div>
+</div>
+<div class="grid">
+<div class="form-group">
+<label id="leadBatteryLabel">Battery Preference</label>
+<select id="leadBatteryPreference">
+<option value="not_sure">Not sure</option>
+<option value="lithium">Lithium</option>
+<option value="tubular">Tubular / Lead-acid</option>
+</select>
+</div>
+<div class="form-group">
+<label>Preferred Contact Method</label>
+<select id="leadContactMethod">
+<option value="phone">Phone Call</option>
+<option value="whatsapp">WhatsApp</option>
+<option value="email">Email</option>
+</select>
+</div>
+</div>
+<div class="form-group" id="leadVendorQuoteGroup" style="display:none;">
+<label id="leadVendorQuoteLabel">What do you want vendors to quote?</label>
+<select id="leadVendorQuoteType">
+<option value="full_system">Full system</option>
+<option value="inverter_only">Inverter only</option>
+<option value="battery_only">Battery only</option>
+<option value="panels_only">Panels only</option>
+<option value="mixed_components">Mixed components</option>
+</select>
+</div>
+<div class="form-group">
+<label id="leadNoteLabel">Note</label>
+<textarea id="leadNote" placeholder="Any special note, installation preference, roof info, timing or brand preference"></textarea>
+</div>
+</div>
+<div class="calc-section">
+<div class="calc-title">Sizing Snapshot</div>
+<div class="info" id="leadSystemSnapshot">No calculation yet.</div>
+</div>
+<div style="display:grid; gap: 12px;">
+<button class="btn btn-success" onclick="submitLead()" style="font-size: 18px;">📤 Submit Request</button>
+<button class="btn btn-secondary" onclick="goBackFromLeadForm()">← Back</button>
+</div>
+</div>
+<div class="screen" id="lead-success">
+<div style="text-align: center; padding: 60px 20px;">
+<div style="
+  width: 80px;
+  height: 80px;
+  background: linear-gradient(135deg, #22c55e, #16a34a);
+  border-radius: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  font-size: 36px;
+  font-weight: 800;
+  color: #ffffff;
+  box-shadow: 0 10px 25px rgba(34,197,94,0.28);
+">✓</div>
+<h1>Request Submitted!</h1>
+<p class="subtitle" id="leadSuccessSubtitle">We have saved your request successfully.</p>
+<div style="display:grid; gap:12px; max-width:320px; margin:30px auto 0;">
+<button class="btn btn-primary" onclick="promptTrackLeadAfterSubmit()">📍 Track This Request</button>
+<button class="btn btn-secondary" onclick="showScreen('user-calculator')">← Back to Calculator</button>
+<button class="btn btn-outline" onclick="showScreen('welcome')">🏠 Back to Home</button>
+</div>
+</div>
+</div>
+<!-- VENDOR PORTAL SCREENS -->
+<div class="screen" id="vendor-login">
+<div style="max-width: 400px; margin: 40px auto; text-align: center;">
+<div style="width: 80px; height: 80px; background: linear-gradient(135deg, #F59E0B, #D97706); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 16px; color: white;">🏪</div>
+<h1>Vendor Portal</h1>
+<p class="subtitle">Manage your solar products</p>
+<button class="btn btn-secondary" onclick="showScreen('welcome')" style="margin-bottom: 20px; width: 100%;">
+            ← Back to Home
+          </button>
+<div class="form-group" style="text-align: left;">
+<label>Email</label>
+<input id="vendorLoginEmail" placeholder="your@email.com" type="email"/>
+</div>
+<div class="form-group" style="text-align: left;">
+<label>Password</label>
+<div style="position: relative;">
+<input id="vendorLoginPassword" placeholder="••••••••" style="padding-right: 45px;" type="password"/>
+<button onclick="togglePasswordVisibility('vendorLoginPassword', 'vendorLoginPasswordIcon')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 20px; padding: 0;" type="button">
+<span id="vendorLoginPasswordIcon">👁️</span>
+</button>
+</div>
+</div>
+<button class="btn btn-warning" onclick="handleVendorLogin()">Sign In</button>
+<div style="text-align: center; margin-top: 16px;">
+<button class="btn" onclick="signInWithGoogle('vendor')" style="width: 100%; background: white; color: #333; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 8px;" type="button">
+<svg height="18" viewbox="0 0 18 18" width="18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"></path><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"></path><path d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707 0-.593.102-1.17.282-1.709V4.958H.957C.347 6.173 0 7.548 0 9c0 1.452.348 2.827.957 4.042l3.007-2.335z" fill="#FBBC05"></path><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"></path></svg>
+              Sign in with Google
+            </button>
+</div>
+<p style="text-align: center; margin-top: 16px; color: #687076; font-size: 14px;">
+<a href="#" onclick="showScreen('vendor-forgot-password'); return false;" style="color: #F59E0B; text-decoration: none;">
+              Forgot Password?
+            </a>
+</p>
+<p style="text-align: center; margin-top: 12px; color: #687076; font-size: 14px;">
+            Don't have an account? 
+            <a href="#" onclick="showScreen('vendor-register'); return false;" style="color: #F59E0B; font-weight: 600; text-decoration: none;">
+              Create Account
+            </a>
+</p>
+</div>
+</div>
+<!-- VENDOR REGISTRATION SCREEN -->
+<div class="screen" id="vendor-register">
+<div style="max-width: 500px; margin: 40px auto;">
+<div style="text-align: center; margin-bottom: 24px;">
+<div style="width: 80px; height: 80px; background: linear-gradient(135deg, #F59E0B, #D97706); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 16px; color: white;">🏪</div>
+<h1>Create Vendor Account</h1>
+<p class="subtitle">Join as a solar equipment vendor</p>
+</div>
+<button class="btn btn-secondary" onclick="showScreen('vendor-login')" style="margin-bottom: 20px; width: 100%;">← Back to Login</button>
+
+<div style="background:#fef3c7;border:1px solid #fde68a;border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#92400e;">
+  <strong>Required fields *</strong> — needed for account creation
+</div>
+
+<div class="form-group">
+<label>Full Name *</label>
+<input id="regVendorFullName" placeholder="Amaka Okafor" type="text"/>
+<div class="error-message" id="regVendorFullNameError"></div>
+</div>
+<div class="form-group">
+<label>Business Name *</label>
+<input id="regVendorCompany" placeholder="Solar Tech Ltd" type="text"/>
+<div class="error-message" id="regVendorCompanyError"></div>
+</div>
+<div class="form-group">
+<label>Email *</label>
+<input id="regVendorEmail" placeholder="your@company.com" type="email"/>
+<div class="error-message" id="regVendorEmailError"></div>
+</div>
+<div class="form-group">
+<label>Phone Number *</label>
+<input id="regVendorPhone" placeholder="+234 800 000 0000" type="tel"/>
+<div class="error-message" id="regVendorPhoneError"></div>
+</div>
+<div class="grid">
+<div class="form-group">
+<label>State *</label>
+<select id="regVendorState"></select>
+<div class="error-message" id="regVendorStateError"></div>
+</div>
+<div class="form-group">
+<label>City / Area *</label>
+<input id="regVendorCity" placeholder="Ikeja / Kano Municipal" type="text"/>
+<div class="error-message" id="regVendorCityError"></div>
+</div>
+</div>
+<div class="form-group">
+<label>Password * (min 8 characters)</label>
+<div style="position: relative;">
+<input id="regVendorPassword" placeholder="••••••••" style="padding-right: 45px;" type="password"/>
+<button onclick="togglePasswordVisibility('regVendorPassword', 'regVendorPasswordIcon')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 20px; padding: 0;" type="button"><span id="regVendorPasswordIcon">👁️</span></button>
+</div>
+<div class="error-message" id="regVendorPasswordError"></div>
+</div>
+<div class="form-group">
+<label>Confirm Password *</label>
+<div style="position: relative;">
+<input id="regVendorPasswordConfirm" placeholder="••••••••" style="padding-right: 45px;" type="password"/>
+<button onclick="togglePasswordVisibility('regVendorPasswordConfirm', 'regVendorPasswordConfirmIcon')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 20px; padding: 0;" type="button"><span id="regVendorPasswordConfirmIcon">👁️</span></button>
+</div>
+<div class="error-message" id="regVendorPasswordConfirmError"></div>
+</div>
+
+<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:16px;margin:20px 0;">
+<div style="font-weight:600;font-size:14px;color:#F59E0B;margin-bottom:14px;">📦 Products & Coverage (helps with lead matching)</div>
+<div class="form-group">
+<label>Delivery Coverage</label>
+<input id="regVendorDelivery" placeholder="Lagos, Ogun, Oyo... or Nationwide" type="text"/>
+</div>
+<div class="form-group">
+<label>Product Categories</label>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;">
+<label style="display:flex;align-items:center;gap:6px;font-weight:400;cursor:pointer;"><input id="regVendorPanels" type="checkbox"/> Solar Panels</label>
+<label style="display:flex;align-items:center;gap:6px;font-weight:400;cursor:pointer;"><input id="regVendorInverters" type="checkbox"/> Inverters</label>
+<label style="display:flex;align-items:center;gap:6px;font-weight:400;cursor:pointer;"><input id="regVendorLithium" type="checkbox"/> Lithium Batteries</label>
+<label style="display:flex;align-items:center;gap:6px;font-weight:400;cursor:pointer;"><input id="regVendorTubular" type="checkbox"/> Tubular Batteries</label>
+<label style="display:flex;align-items:center;gap:6px;font-weight:400;cursor:pointer;"><input id="regVendorAccessories" type="checkbox"/> Accessories</label>
+</div>
+</div>
+<div class="form-group">
+<label>Do you offer installation too?</label>
+<select id="regVendorOffersInstall">
+<option value="">Select...</option>
+<option value="yes">Yes</option>
+<option value="no">No</option>
+</select>
+</div>
+</div>
+
+<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:16px;margin:20px 0;">
+<div style="font-weight:600;font-size:14px;color:#687076;margin-bottom:14px;">📋 Optional Details</div>
+<div class="form-group">
+<label>Shop / Business Address</label>
+<input id="regVendorAddress" placeholder="123 Allen Avenue, Ikeja, Lagos" type="text"/>
+</div>
+<div class="form-group">
+<label>WhatsApp Number</label>
+<input id="regVendorWhatsapp" placeholder="+234 800 000 0000" type="tel"/>
+</div>
+<div class="form-group">
+<label>Brands Carried</label>
+<input id="regVendorBrands" placeholder="Luminous, Felicity, Victron, SolarEdge..." type="text"/>
+</div>
+<div class="form-group">
+<label>CAC Registration Number</label>
+<input id="regVendorCac" placeholder="RC-000000" type="text"/>
+</div>
+<div class="form-group">
+<label>CAC Document (PDF/Image)</label>
+<input accept=".pdf,image/*" id="regVendorCacDoc" type="file"/>
+<div style="font-size:12px;color:#687076;margin-top:4px;">Upload will be saved to your profile</div>
+</div>
+<div class="form-group">
+<label>Business Description</label>
+<textarea id="regVendorDesc" placeholder="Brief description of your business, products, and delivery areas..."></textarea>
+</div>
+</div>
+
+<div class="form-group">
+<label>Security Question *</label>
+<select id="regVendorSecurityQ">
+<option value="">Select a question</option>
+<option value="city">What city were you born in?</option>
+<option value="school">What was your first school?</option>
+<option value="pet">What was your first pet's name?</option>
+</select>
+<div class="error-message" id="regVendorSecurityQError"></div>
+</div>
+<div class="form-group">
+<label>Security Answer *</label>
+<input id="regVendorSecurityA" placeholder="Your answer" type="text"/>
+<div class="error-message" id="regVendorSecurityAError"></div>
+</div>
+<button class="btn btn-warning" onclick="registerVendor()" style="width: 100%; margin-top: 16px;">Create Account</button>
+<p style="text-align: center; margin-top: 16px; color: #687076; font-size: 14px;">
+Already have an account? <a href="#" onclick="showScreen('vendor-login'); return false;" style="color: #F59E0B;">Login here</a>
+</p>
+</div>
+</div>
+<!-- VENDOR FORGOT PASSWORD SCREEN -->
+<div class="screen" id="vendor-forgot-password">
+<div style="max-width: 400px; margin: 40px auto;">
+<div style="text-align: center; margin-bottom: 24px;">
+<div style="width: 80px; height: 80px; background: linear-gradient(135deg, #F59E0B, #D97706); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 16px; color: white;">🔑</div>
+<h1>Reset Password</h1>
+<p class="subtitle">Vendor Portal</p>
+</div>
+<button class="btn btn-secondary" onclick="showScreen('vendor-login')" style="margin-bottom: 20px; width: 100%;">
+            ← Back to Login
+          </button>
+<div id="vendorForgotStep1">
+<div class="form-group">
+<label>Email</label>
+<input id="vendorForgotEmail" placeholder="your@company.com" type="email"/>
+<div class="error-message" id="vendorForgotEmailError"></div>
+</div>
+<button class="btn btn-warning" onclick="vendorForgotStep1()" style="width: 100%;">
+              Next
+            </button>
+</div>
+<div id="vendorForgotStep2" style="display: none;">
+<div class="info" style="margin-bottom: 16px;">
+              Answer your security question to reset your password.
+            </div>
+<div class="form-group">
+<label id="vendorForgotQuestion">Security Question</label>
+<input id="vendorForgotAnswer" placeholder="Your answer" type="text"/>
+<div class="error-message" id="vendorForgotAnswerError"></div>
+</div>
+<button class="btn btn-warning" onclick="vendorForgotStep2()" style="width: 100%;">
+              Verify
+            </button>
+</div>
+<div id="vendorForgotStep3" style="display: none;">
+<div class="success" style="margin-bottom: 16px;">
+              ✅ Verified! Set your new password.
+            </div>
+<div class="form-group">
+<label>New Password (min 8 characters)</label>
+<input id="vendorForgotNewPassword" placeholder="••••••••" type="password"/>
+<div class="error-message" id="vendorForgotNewPasswordError"></div>
+</div>
+<div class="form-group">
+<label>Confirm New Password</label>
+<input id="vendorForgotConfirmPassword" placeholder="••••••••" type="password"/>
+<div class="error-message" id="vendorForgotConfirmPasswordError"></div>
+</div>
+<button class="btn btn-warning" onclick="vendorForgotStep3()" style="width: 100%;">
+              Reset Password
+            </button>
+</div>
+</div>
+</div>
+<div class="screen" id="vendor-dashboard">
+<h1>Welcome, Vendor!</h1>
+<p class="subtitle">Product management dashboard</p>
+<div class="grid" style="margin-bottom: 24px;">
+<div class="stat-card" style="background: linear-gradient(135deg, #fef3c7, #fde68a);">
+<div id="vendorProductCount" style="font-size: 32px; font-weight: 700;">0</div>
+<div style="font-size: 13px; color: #92400e; margin-top: 4px;">Products</div>
+</div>
+<div class="stat-card" style="background: linear-gradient(135deg, #f0fdf4, #dcfce7);">
+<div id="vendorRequestsCount" style="font-size: 32px; font-weight: 700;">0</div>
+<div style="font-size: 13px; color: #166534; margin-top: 4px;">Matched Requests</div>
+</div>
+</div>
+<div class="action-card" onclick="showScreen('vendor-add-product')">
+<div style="width: 48px; height: 48px; background: #fef3c7; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">➕</div>
+<div style="flex: 1;">
+<div style="font-weight: 600; margin-bottom: 2px;">Add New Product</div>
+<div style="font-size: 13px; color: #687076;">List solar equipment for sale</div>
+</div>
+<div style="color: #F59E0B; font-size: 20px;">→</div>
+</div>
+<div class="action-card" onclick="showScreen('vendor-calculator')">
+<div style="width: 48px; height: 48px; background: #fef3c7; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">🧮</div>
+<div style="flex: 1;">
+<div style="font-weight: 600; margin-bottom: 2px;">Sales Calculator</div>
+<div style="font-size: 13px; color: #687076;">Size systems &amp; generate quotes</div>
+</div>
+<div style="color: #F59E0B; font-size: 20px;">→</div>
+</div>
+<div class="action-card" onclick="showScreen('vendor-catalog')">
+<div style="width: 48px; height: 48px; background: #fef3c7; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">📦</div>
+<div style="flex: 1;">
+<div style="font-weight: 600; margin-bottom: 2px;">Product Catalog</div>
+<div style="font-size: 13px; color: #687076;">View and manage products</div>
+</div>
+<div style="color: #F59E0B; font-size: 20px;">→</div>
+</div>
+<div class="action-card" onclick="showScreen('vendor-requests')">
+<div style="width: 48px; height: 48px; background: #fef3c7; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">📋</div>
+<div style="flex: 1;">
+<div style="font-weight: 600; margin-bottom: 2px;">Matched Requests</div>
+<div style="font-size: 13px; color: #687076;">View customer product requests</div>
+</div>
+<div style="color: #F59E0B; font-size: 20px;">→</div>
+</div>
+<div class="action-card" onclick="egOpenInstallerMarketplaceFrom('vendor-dashboard')">
+<div style="width: 48px; height: 48px; background: #fef3c7; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">🛠</div>
+<div style="flex: 1;">
+<div style="font-weight: 600; margin-bottom: 2px;">Browse Installers</div>
+<div style="font-size: 13px; color: #687076;">Find installation partners near you</div>
+</div>
+<div style="color: #F59E0B; font-size: 20px;">→</div>
+</div>
+<div class="action-card" onclick="showScreen('vendor-profile-view')">
+<div style="width: 48px; height: 48px; background: #fef3c7; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>
+<div style="flex: 1;">
+<div style="font-weight: 600; margin-bottom: 2px;">My Profile</div>
+<div style="font-size: 13px; color: #687076;">View and edit your business profile</div>
+</div>
+<div style="color: #F59E0B; font-size: 20px;">→</div>
+</div>
+</div>
+<div class="screen" id="vendor-add-product">
+<h1 id="vendorFormTitle">Add Product</h1>
+<p class="subtitle">List your solar equipment</p>
+<div class="form-group">
+<label>Product Name *</label>
+<input id="vendorProdName" placeholder="500W Monocrystalline Panel" type="text"/>
+<div class="error-message" id="vendorProdNameError"></div>
+</div>
+<div class="form-group">
+<label>Product Type *</label>
+<select id="vendorProdType">
+<option value="">Select type...</option>
+<option value="panel">Solar Panel</option>
+<option value="inverter">Inverter</option>
+<option value="battery">Battery</option>
+<option value="controller">Charge Controller</option>
+<option value="cable">Cable</option>
+<option value="breaker">Breaker</option>
+</select>
+<div class="error-message" id="vendorProdTypeError"></div>
+</div>
+<div class="grid">
+<div class="form-group">
+<label>Power (W)</label>
+<input id="vendorProdPower" placeholder="500" type="number"/>
+</div>
+<div class="form-group">
+<label>Price (₦) *</label>
+<input id="vendorProdPrice" placeholder="84000" type="number"/>
+<div class="error-message" id="vendorProdPriceError"></div>
+</div>
+</div>
+<div class="form-group">
+<label>Description</label>
+<textarea id="vendorProdDesc" placeholder="High efficiency panel with 25-year warranty"></textarea>
+</div>
+<div class="form-group">
+<label>Product Image</label>
+<div class="image-upload-area" onclick="document.getElementById('vendorImageFile').click()">
+<div style="font-size: 40px; margin-bottom: 8px;">📷</div>
+<div style="font-size: 14px; color: #687076;">Click to upload image</div>
+<div style="font-size: 12px; color: #9ca3af; margin-top: 4px;">Max 1MB • JPG, PNG</div>
+</div>
+<input accept="image/*" id="vendorImageFile" onchange="handleVendorImageSelect(event)" style="display: none;" type="file"/>
+<img class="image-preview" id="vendorImagePreview" style="display: none;"/>
+<div class="error-message" id="vendorImageError"></div>
+</div>
+<button class="btn btn-warning" id="vendorSaveBtn" onclick="saveVendorProduct()" style="font-size: 18px;">
+          💾 Save Product
+        </button>
+</div>
+<div class="screen" id="vendor-catalog">
+<h1>Product Catalog</h1>
+<p class="subtitle">Manage your products</p>
+<div id="vendorProductsList"></div>
+<button class="btn btn-secondary" onclick="showScreen('vendor-dashboard')">← Back to Dashboard</button>
+</div>
+<div class="screen" id="vendor-requests">
+<h1>Matched Requests</h1>
+<p class="subtitle">Customer product requests</p>
+<div class="calc-section" id="vendorRequestsList"></div>
+<button class="btn btn-secondary" onclick="showScreen('vendor-dashboard')">← Back</button>
+</div>
+<!-- VENDOR CALCULATOR SCREENS -->
+<div class="screen" id="vendor-calculator"><h1>Sales Calculator</h1><p class="subtitle">Quick system sizing &amp; quotation</p><div class="embedded-iframe-content" data-embedded-from-iframe="true">
+<header>
+  <div class="logo-sun">☀️
+</div>
+  <div class="logo-text">
+    <h1>Energy Guide</h1>
+    <p>Solar Sizing Calculator</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- LEFT: INPUT l4v_PANEL -->
+  <div class="left-panel">
+    <div class="section-label">Add Appliances</div>
+
+    <div class="add-form">
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Appliance Name</label>
+          <input type="text" id="l4v-inp-name" list="l4v-appliance-suggestions" placeholder="e.g. Standing Fan" />
+          <datalist id="l4v-appliance-suggestions"></datalist>
+        </div>
+        <div class="form-field">
+          <label>Watts (W)</label>
+          <input type="number" id="l4v-inp-watts" placeholder="65" min="0" />
+        </div>
+        <div class="form-field">
+          <label>Quantity</label>
+          <input type="number" id="l4v-inp-qty" placeholder="1" min="1" value="1" />
+        </div>
+        <div class="form-field">
+          <label>Hrs/Day</label>
+          <input type="number" id="l4v-inp-hours" placeholder="8" min="0" max="24" step="0.5" />
+        </div>
+        <div class="form-field">
+          <label>Fridge Mode</label>
+          <select id="l4v-inp-fridge-mode">
+            <option value="none" selected>—</option>
+            <option value="inverter_fridge">Inverter Fridge (35%)</option>
+            <option value="normal_fridge">Normal Fridge (50%)</option>
+            <option value="chest_freezer">Chest Freezer (60%)</option>
+          </select>
+        </div>
+      <button class="btn-add" onclick="l4v_addAppliance()">＋ Add Appliance</button>
+    </div>
+
+<div class="presets">
+      <div class="section-label">Quick Add</div>
+      <div class="l4v-preset-chips" id="l4v-preset-chips"></div>
+      <div style="font-size:12px;color:#6b7280;margin-top:8px;">Tap any appliance below to add it quickly.</div>
+    </div>
+
+    <div class="section-label">Your Appliances (<span id="l4v-count">0</span>)</div>
+    <div class="l4v-appliance-list" id="l4v-appliance-list">
+      <div class="empty-state">
+        <div class="icon">🏠</div>
+        <p>No appliances added yet.<br/>Use the form or quick-add chips above.</p>
+      </div>
+    </div>
+
+    <button class="btn-l4v_calculate" id="l4v-calc-btn" onclick="l4v_calculate()" disabled>
+      ⚡ Calculate My Solar System
+    </button>
+  </div>
+
+  <!-- RIGHT: RESULTS l4v_PANEL -->
+  <div class="right-panel">
+    <div class="results-placeholder" id="l4v-placeholder">
+      <div class="big-icon">☀️</div>
+      <p>Add your appliances and tap Calculate to size your solar system.</p>
+    </div>
+
+    <div class="l4v-results" id="l4v-results">
+      <!-- ERROR ALERT (if any) -->
+      <div id="l4v-error-alert" class="l4v-error-alert" style="display:none;"></div>
+
+      <div class="simple-summary">
+        <div class="section-label">Recommended Materials</div>
+        <div class="simple-portal-note">Simple view for product quotation and supply. Full technical math is hidden here.</div>
+        <div class="simple-grid">
+          <div class="simple-card">
+            <div class="simple-label">Inverter</div>
+            <div class="simple-value accent" id="l4v-s-inverter-kva">—</div>
+            <div class="simple-sub" id="l4v-s-inverter-model">—</div>
+            <div class="simple-note" id="l4v-s-inverter-voltage">—</div>
+          </div>
+          <div class="simple-card">
+            <div class="simple-label">Solar Panels</div>
+            <div class="simple-value green" id="l4v-s-panels-count">—</div>
+            <div class="simple-sub" id="l4v-s-panels-size">—</div>
+            <div class="simple-note" id="l4v-s-panels-total">—</div>
+            <div class="simple-panel-toggle">
+              <button type="button" id="l4v-simple-panel-toggle-A" onclick="l4v_egTogglePanel('A')">Load Sustain</button>
+              <button type="button" id="l4v-simple-panel-toggle-B" onclick="l4v_egTogglePanel('B')">Full Recharge</button>
+            </div>
+            <div class="simple-note" id="l4v-s-panels-mode">—</div>
+          </div>
+          <div class="simple-card">
+            <div class="simple-label">Battery</div>
+            <div class="simple-value" id="l4v-s-battery-main">—</div>
+            <div class="simple-sub" id="l4v-s-battery-config">—</div>
+            <div class="simple-note" id="l4v-s-battery-alt">—</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="technical-only">
+      <div class="section-label">Load Analysis</div>
+      <div class="result-card">
+        <div class="stat-grid">
+          <div class="stat-item">
+            <div class="stat-label">Total Running Load</div>
+            <div class="stat-value accent" id="l4v-r-watts">—</div>
+            <div class="stat-unit">Watts</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Daily Consumption</div>
+            <div class="stat-value accent" id="l4v-r-kwh">—</div>
+            <div class="stat-unit">kWh / day</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Peak Surge Load</div>
+            <div class="stat-value" id="l4v-r-surge">—</div>
+            <div class="stat-unit">Watts</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-section simple-hide-section">
+        <div class="section-label">System Voltage & Inverter</div>
+        <div class="result-card">
+          <div class="stat-grid">
+            <div class="stat-item">
+              <div class="stat-label">System DC Voltage</div>
+              <div class="stat-value green" id="l4v-r-voltage">—</div>
+              <div class="stat-unit">Volts DC</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Recommended Inverter</div>
+              <div class="stat-value accent" id="l4v-r-kva">—</div>
+              <div class="stat-unit">kVA Hybrid Inverter</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Inverter Model</div>
+              <div class="stat-value" id="l4v-r-inv-model" style="font-size:14px;">—</div>
+              <div class="stat-unit">Recommended</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">AC Output Current</div>
+              <div class="stat-value" id="l4v-r-ac-amps">—</div>
+              <div class="stat-unit">Amps</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONFLICT BADGE -->
+      <div id="l4v-r-conflict-badge" style="display:none;background:#fff7ed;border:1px solid #fb923c;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#9a3412;line-height:1.6">
+        <strong style="display:block;margin-bottom:4px">⚡ System Voltage Upgraded</strong>
+        <span id="l4v-r-conflict-text"></span>
+      </div>
+
+      <div class="result-section simple-hide-section">
+        <div class="section-label">Battery Storage — LiFePO4</div>
+        <div id="l4v-r-battery-options" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px"></div>
+        <div style="margin-top:8px;font-size:11px;color:var(--muted);text-align:center">Tap an option to use it in your system selection</div>
+      </div>
+
+      <div class="result-section simple-hide-section">
+        <div class="section-label">Solar Panels</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px;">
+          <button type="button" id="l4v-panel-toggle-A" onclick="l4v_egTogglePanel('A')" style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-weight:700;cursor:pointer;">Load Sustain</button>
+          <button type="button" id="l4v-panel-toggle-B" onclick="l4v_egTogglePanel('B')" style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-weight:700;cursor:pointer;">Full Recharge</button>
+        </div>
+        <div class="result-card">
+          <div class="stat-grid">
+            <div class="stat-item"><div class="stat-label">Total PV Required</div><div class="stat-value accent" id="l4v-r-pv-watts">—</div><div class="stat-unit">Watts</div></div>
+            <div class="stat-item"><div class="stat-label">Number of Panels</div><div class="stat-value green" id="l4v-r-panels">—</div><div class="stat-unit">× 550W panels</div></div>
+            <div class="stat-item"><div class="stat-label">Est. Daily Generation</div><div class="stat-value green" id="l4v-r-gen">—</div><div class="stat-unit">kWh / day</div></div>
+            <div class="stat-item"><div class="stat-label">System Coverage</div><div class="stat-value green" id="l4v-r-coverage">—</div><div class="stat-unit">% of load</div></div>
+          </div>
+          <div class="solar-breakdown" id="l4v-r-solar-breakdown"></div>
+        </div>
+      </div>
+
+      </div><!-- end technical-only -->
+
+      <div class="result-section">
+        <div class="section-label">Cables &amp; Breakers</div>
+        <div class="result-card">
+          <table class="cable-table">
+            <thead><tr><th>Connection</th><th>Cable</th><th>Breaker</th></tr></thead>
+            <tbody id="l4v-r-cables"></tbody>
+          </table>
+        </div>
+      </div>
+
+      
+
+      </div>
+
+    </div><!-- end #results -->
+  </div><!-- end right-panel -->
+</div><!-- end container -->
+<div id="vendorCalcBuildOfferBtn" style="display:none; margin-top:16px;">
+  <button class="btn btn-warning" onclick="openVendorOfferBuilder()" style="width:100%; padding:16px; font-size:15px;">📦 Build Client Offer</button>
+</div>
+
+</div>
+</div></div>
+<div class="screen" id="l4v-vendor-quote">
+<h1>System Quote Summary</h1>
+<p class="subtitle" id="l4v-vQuoteCustName">System quote prepared from your Energy Guide recommendation</p>
+<div class="grid" style="margin-bottom: 20px;">
+<div class="result-card" style="text-align: left;">
+<div class="result-label">Running Load</div>
+<div class="result-value" id="l4v-vQuoteRunning" style="font-size: 22px;">-</div>
+</div>
+<div class="result-card" style="text-align: left;">
+<div class="result-label">Daily Energy</div>
+<div class="result-value" id="l4v-vQuoteEnergy" style="font-size: 22px;">-</div>
+</div>
+<div class="result-card" style="text-align: left;">
+<div class="result-label">System Voltage</div>
+<div class="result-value" id="l4v-vQuoteVoltage" style="font-size: 22px;">-</div>
+</div>
+<div class="result-card" style="text-align: left;">
+<div class="result-label">Max Surge</div>
+<div class="result-value" id="l4v-vQuoteSurge" style="font-size: 22px;">-</div>
+</div>
+</div>
+<div class="calc-section">
+<div class="calc-title">⚡ Inverter</div>
+<div id="l4v-vQuoteInverterMatch"></div>
+</div>
+<div class="calc-section">
+<div class="calc-title">☀️ Solar Panels</div>
+<div id="l4v-vQuotePanelsMatch"></div>
+</div>
+<div class="calc-section">
+<div class="calc-title">🔋 Batteries</div>
+<div id="l4v-vQuoteBatteriesMatch"></div>
+</div>
+<div class="calc-section">
+<div class="calc-title">🎛️ Additional Components</div>
+<div class="info" id="l4v-vQuoteExtras"></div>
+</div>
+<div class="cost-total" style="background: linear-gradient(135deg, #F59E0B, #D97706);">
+<span>TOTAL INVESTMENT</span>
+<span id="l4v-vQuoteTotalCost">₦0</span>
+</div>
+<div class="info" style="font-size: 13px; margin-bottom: 20px;">
+          ℹ️ <strong>Includes:</strong> All components, installation, cables, breakers, and miscellaneous (10%)
+        </div>
+<div class="grid" style="margin-top: 20px;">
+<button class="btn btn-warning" onclick="vQuoteGeneratePDF()">
+            📄 Download PDF
+          </button>
+<button class="btn btn-outline" onclick="vQuoteShareWhatsApp()" style="color: #F59E0B; border-color: #F59E0B;">
+            📱 Share on WhatsApp
+          </button>
+</div>
+<button class="btn btn-primary" onclick="egOpenInstallerMarketplaceFrom('vendor-offer-builder')" style="width:100%;margin-top:12px;">🛠 Browse Installers</button>
+<button class="btn btn-secondary" onclick="showScreen('vendor-calculator')" style="margin-top: 12px;">
+          ← Back to Calculator
+        </button>
+</div>
+
+<!-- ===== VENDOR OFFER BUILDER SCREEN ===== -->
+<div class="screen" id="vendor-offer-builder">
+<h1>📦 Vendor Offer Builder</h1>
+<p class="subtitle">Build a product offer from the Energy Guide recommendation</p>
+
+<!-- SECTION A: Customer / Request Snapshot -->
+<div class="calc-section">
+<div class="calc-title">👤 A — Customer / Request Snapshot</div>
+<div id="vob-client-card" style="font-size:14px;line-height:2.1;background:#f9fafb;border-radius:10px;padding:14px;"></div>
+</div>
+
+<!-- SECTION B: Energy Guide Recommendation (read-only) -->
+<div class="calc-section">
+<div class="calc-title">📊 B — Energy Guide Recommendation</div>
+<div style="font-size:11px;color:#9ca3af;margin-bottom:10px;font-style:italic;">Platform-calculated · read-only · not editable</div>
+<div id="vob-rec-card" style="font-size:13px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:14px;"></div>
+</div>
+
+<!-- SECTION C: Vendor Product Offer (editable) -->
+<div class="calc-section">
+<div class="calc-title">✏️ C — Vendor Product Offer</div>
+<div style="font-size:11px;color:#9ca3af;margin-bottom:14px;">Enter your brands, quantities and prices</div>
+
+<div style="font-weight:600;font-size:13px;margin:0 0 8px;color:#374151;">☀️ Panels</div>
+<div class="grid" style="margin-bottom:6px;">
+  <div><label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Brand / Model</label>
+  <input type="text" id="vob-panel-brand" placeholder="e.g. Jinko 500W Mono" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;box-sizing:border-box;"></div>
+  <div><label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Quantity</label>
+  <input type="number" id="vob-panel-qty" min="1" oninput="vobRecalc()" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;box-sizing:border-box;"></div>
+</div>
+<div class="grid" style="margin-bottom:16px;">
+  <div><label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Unit Price (₦)</label>
+  <input type="number" id="vob-panel-price" min="0" oninput="vobRecalc()" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;box-sizing:border-box;"></div>
+  <div></div>
+</div>
+
+<div style="font-weight:600;font-size:13px;margin:0 0 8px;color:#374151;">⚡ Inverter</div>
+<div class="grid" style="margin-bottom:6px;">
+  <div><label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Brand / Model</label>
+  <input type="text" id="vob-inv-brand" placeholder="e.g. Growatt 5kVA Hybrid" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;box-sizing:border-box;"></div>
+  <div><label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Quantity</label>
+  <input type="number" id="vob-inv-qty" min="1" oninput="vobRecalc()" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;box-sizing:border-box;"></div>
+</div>
+<div class="grid" style="margin-bottom:16px;">
+  <div><label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Unit Price (₦)</label>
+  <input type="number" id="vob-inv-price" min="0" oninput="vobRecalc()" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;box-sizing:border-box;"></div>
+  <div></div>
+</div>
+
+<div style="font-weight:600;font-size:13px;margin:0 0 8px;color:#374151;">🔋 Battery</div>
+<div class="grid" style="margin-bottom:6px;">
+  <div><label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Brand / Model</label>
+  <input type="text" id="vob-bat-brand" placeholder="e.g. Felicity 5kWh LiFePO4" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;box-sizing:border-box;"></div>
+  <div><label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Quantity</label>
+  <input type="number" id="vob-bat-qty" min="1" oninput="vobRecalc()" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;box-sizing:border-box;"></div>
+</div>
+<div class="grid" style="margin-bottom:16px;">
+  <div><label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Unit Price (₦)</label>
+  <input type="number" id="vob-bat-price" min="0" oninput="vobRecalc()" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;box-sizing:border-box;"></div>
+  <div></div>
+</div>
+
+<div style="font-weight:600;font-size:13px;margin:0 0 8px;color:#374151;">🔧 Accessories / BOS</div>
+<div style="margin-bottom:16px;">
+  <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Accessories / BOS Cost (₦) — connectors, isolators, mounting, etc.</label>
+  <input type="number" id="vob-bos" min="0" oninput="vobRecalc()" placeholder="0" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;box-sizing:border-box;">
+</div>
+
+<div style="font-weight:600;font-size:13px;margin:0 0 8px;color:#374151;">🚚 Delivery & Commercial Terms</div>
+<div class="grid" style="margin-bottom:8px;">
+  <div><label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Delivery Fee (₦)</label>
+  <input type="number" id="vob-delivery" min="0" oninput="vobRecalc()" placeholder="0" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;box-sizing:border-box;"></div>
+  <div><label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Discount (₦)</label>
+  <input type="number" id="vob-discount" min="0" oninput="vobRecalc()" placeholder="0" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;box-sizing:border-box;"></div>
+</div>
+<div class="grid" style="margin-bottom:8px;">
+  <div><label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Warranty Note</label>
+  <input type="text" id="vob-warranty" placeholder="e.g. 5yr panel, 2yr inverter" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;box-sizing:border-box;"></div>
+  <div><label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Availability Note</label>
+  <input type="text" id="vob-availability" placeholder="e.g. In stock · Ready in 2 days" style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;box-sizing:border-box;"></div>
+</div>
+<div style="margin-bottom:8px;">
+  <label style="font-size:11px;color:#6b7280;display:block;margin-bottom:4px;">Vendor Note</label>
+  <textarea id="vob-note" placeholder="Any additional notes for the customer..." style="width:100%;padding:9px 12px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;resize:vertical;min-height:60px;box-sizing:border-box;font-family:inherit;"></textarea>
+</div>
+</div>
+
+<!-- SECTION D: Offer Breakdown -->
+<div class="calc-section">
+<div class="calc-title">💰 D — Offer Breakdown</div>
+<div id="vob-breakdown"></div>
+<div style="margin-top:12px;font-size:12px;color:#6b7280;background:#f9fafb;border-radius:8px;padding:12px;line-height:1.7;">
+  <strong>Reference only (not added to total):</strong><br>
+  <span id="vob-ref-breakers">—</span><br>
+  <em>Final materials and compatibility remain subject to technical/site verification.</em>
+</div>
+</div>
+
+<!-- SECTION E: Final Vendor Offer Summary -->
+<div class="calc-section">
+<div class="calc-title">🏁 E — Final Vendor Offer</div>
+<div id="vob-summary"></div>
+<div style="font-size:12px;color:#6b7280;margin-top:10px;font-style:italic;">
+  Product availability, compatibility, and final pricing are subject to confirmation.
+</div>
+</div>
+
+<!-- SECTION F: Action Buttons -->
+<div class="grid" style="margin-top:20px;">
+<button class="btn btn-primary" onclick="vobDownloadPDF()">📄 Download Offer PDF</button>
+<button class="btn btn-success" onclick="vobShareWhatsApp()">📱 Share on WhatsApp</button>
+</div>
+<div style="margin-top:10px;">
+<button class="btn btn-outline" onclick="backFromVendorOfferBuilder()" style="width:100%;">← Back</button>
+</div>
+</div>
+
+<!-- INSTALLER PORTAL SCREENS (from Batch 1) -->
+<div class="screen" id="installer-login">
+<div style="max-width: 400px; margin: 40px auto; text-align: center;">
+<div style="width: 80px; height: 80px; background: linear-gradient(135deg, #22C55E, #16A34A); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 16px;">🛠</div>
+<h1>Installer Portal</h1>
+<p class="subtitle">Professional tools &amp; calculator</p>
+<button class="btn btn-secondary" onclick="showScreen('welcome')" style="margin-bottom: 20px; width: 100%;">
+            ← Back to Home
+          </button>
+<div class="form-group" style="text-align: left;">
+<label>Email</label>
+<input id="instLoginEmail" placeholder="your@email.com" type="email"/>
+</div>
+<div class="form-group" style="text-align: left;">
+<label>Password</label>
+<div style="position: relative;">
+<input id="instLoginPassword" placeholder="••••••••" style="padding-right: 45px;" type="password"/>
+<button onclick="togglePasswordVisibility('instLoginPassword', 'instLoginPasswordIcon')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 20px; padding: 0;" type="button">
+<span id="instLoginPasswordIcon">👁️</span>
+</button>
+</div>
+</div>
+<button class="btn btn-success" onclick="handleInstallerLogin()">Sign In</button>
+<div style="text-align: center; margin-top: 16px;">
+<button class="btn" onclick="signInWithGoogle('installer')" style="width: 100%; background: white; color: #333; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; gap: 8px;" type="button">
+<svg height="18" viewbox="0 0 18 18" width="18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"></path><path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"></path><path d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707 0-.593.102-1.17.282-1.709V4.958H.957C.347 6.173 0 7.548 0 9c0 1.452.348 2.827.957 4.042l3.007-2.335z" fill="#FBBC05"></path><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"></path></svg>
+              Sign in with Google
+            </button>
+</div>
+<p style="text-align: center; margin-top: 16px; color: #687076; font-size: 14px;">
+<a href="#" onclick="showScreen('installer-forgot-password'); return false;" style="color: #22C55E; text-decoration: none;">
+              Forgot Password?
+            </a>
+</p>
+<p style="text-align: center; margin-top: 12px; color: #687076; font-size: 14px;">
+            Don't have an account? 
+            <a href="#" onclick="showScreen('installer-register'); return false;" style="color: #22C55E; font-weight: 600; text-decoration: none;">
+              Create Account
+            </a>
+</p>
+</div>
+</div>
+<!-- INSTALLER REGISTRATION SCREEN -->
+<div class="screen" id="installer-register">
+<div style="max-width: 500px; margin: 40px auto;">
+<div style="text-align: center; margin-bottom: 24px;">
+<div style="width: 80px; height: 80px; background: linear-gradient(135deg, #22C55E, #16A34A); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 16px;">🛠</div>
+<h1>Create Installer Account</h1>
+<p class="subtitle">Join as a solar installer</p>
+</div>
+<button class="btn btn-secondary" onclick="showScreen('installer-login')" style="margin-bottom: 20px; width: 100%;">← Back to Login</button>
+
+<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:12px 16px;margin-bottom:20px;font-size:13px;color:#166534;">
+  <strong>Required fields *</strong> — needed for account creation
+</div>
+
+<div class="form-group">
+<label>Full Name *</label>
+<input id="regInstFullName" placeholder="John Adeyemi" type="text"/>
+<div class="error-message" id="regInstFullNameError"></div>
+</div>
+<div class="form-group">
+<label>Business Name *</label>
+<input id="regInstCompany" placeholder="Energy Solutions Ltd" type="text"/>
+<div class="error-message" id="regInstCompanyError"></div>
+</div>
+<div class="form-group">
+<label>Email *</label>
+<input id="regInstEmail" placeholder="your@company.com" type="email"/>
+<div class="error-message" id="regInstEmailError"></div>
+</div>
+<div class="form-group">
+<label>Phone Number *</label>
+<input id="regInstPhone" placeholder="+234 800 000 0000" type="tel"/>
+<div class="error-message" id="regInstPhoneError"></div>
+</div>
+<div class="grid">
+<div class="form-group">
+<label>State *</label>
+<select id="regInstState"></select>
+<div class="error-message" id="regInstStateError"></div>
+</div>
+<div class="form-group">
+<label>City / Area *</label>
+<input id="regInstArea" placeholder="Ikeja / Kano Municipal" type="text"/>
+<div class="error-message" id="regInstAreaError"></div>
+</div>
+</div>
+<div class="form-group">
+<label>Password * (min 8 characters)</label>
+<div style="position: relative;">
+<input id="regInstPassword" placeholder="••••••••" style="padding-right: 45px;" type="password"/>
+<button onclick="togglePasswordVisibility('regInstPassword', 'regInstPasswordIcon')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 20px; padding: 0;" type="button"><span id="regInstPasswordIcon">👁️</span></button>
+</div>
+<div class="error-message" id="regInstPasswordError"></div>
+</div>
+<div class="form-group">
+<label>Confirm Password *</label>
+<div style="position: relative;">
+<input id="regInstPasswordConfirm" placeholder="••••••••" style="padding-right: 45px;" type="password"/>
+<button onclick="togglePasswordVisibility('regInstPasswordConfirm', 'regInstPasswordConfirmIcon')" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; font-size: 20px; padding: 0;" type="button"><span id="regInstPasswordConfirmIcon">👁️</span></button>
+</div>
+<div class="error-message" id="regInstPasswordConfirmError"></div>
+</div>
+
+<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:16px;margin:20px 0;">
+<div style="font-weight:600;font-size:14px;color:#22C55E;margin-bottom:14px;">📍 Service Coverage (helps with lead matching)</div>
+<div class="grid">
+<div class="form-group">
+<label>Service State</label>
+<select id="regInstServiceState"></select>
+</div>
+<div class="form-group">
+<label>Service City / Area</label>
+<input id="regInstServiceCity" placeholder="Ikeja, VI, Lekki..." type="text"/>
+</div>
+</div>
+<div class="grid">
+<div class="form-group">
+<label>Min System (kVA)</label>
+<input id="regInstMinKva" min="0.5" placeholder="1" step="0.5" type="number"/>
+</div>
+<div class="form-group">
+<label>Max System (kVA)</label>
+<input id="regInstMaxKva" min="1" placeholder="20" step="0.5" type="number"/>
+</div>
+</div>
+<div class="form-group">
+<label>Battery Types</label>
+<div style="display:flex;gap:16px;margin-top:6px;">
+<label style="display:flex;align-items:center;gap:6px;font-weight:400;cursor:pointer;"><input id="regInstLithium" type="checkbox"/> Lithium</label>
+<label style="display:flex;align-items:center;gap:6px;font-weight:400;cursor:pointer;"><input id="regInstTubular" type="checkbox"/> Tubular</label>
+</div>
+</div>
+<div class="form-group">
+<label>Market Type</label>
+<select id="regInstMarket">
+<option value="">Select...</option>
+<option value="residential">Residential</option>
+<option value="commercial">Commercial</option>
+<option value="both">Both</option>
+</select>
+</div>
+<div class="form-group">
+<label>Years of Experience</label>
+<select id="regInstYears">
+<option value="">Select...</option>
+<option value="0-1">Less than 1 year</option>
+<option value="1-3">1 – 3 years</option>
+<option value="3-5">3 – 5 years</option>
+<option value="5-10">5 – 10 years</option>
+<option value="10+">10+ years</option>
+</select>
+</div>
+</div>
+
+<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:16px;margin:20px 0;">
+<div style="font-weight:600;font-size:14px;color:#687076;margin-bottom:14px;">📋 Optional Details</div>
+<div class="form-group">
+<label>WhatsApp Number</label>
+<input id="regInstWhatsapp" placeholder="+234 800 000 0000" type="tel"/>
+</div>
+<div class="form-group">
+<label>CAC Registration Number</label>
+<input id="regInstCac" placeholder="RC-000000" type="text"/>
+</div>
+<div class="form-group">
+<label>CAC Document (PDF/Image)</label>
+<input accept=".pdf,image/*" id="regInstCacDoc" type="file"/>
+<div style="font-size:12px;color:#687076;margin-top:4px;">Upload will be saved to your profile</div>
+</div>
+<div class="form-group">
+<label>Business Description</label>
+<textarea id="regInstDesc" placeholder="Brief description of your services, specialisations, notable projects..."></textarea>
+</div>
+</div>
+
+<div class="form-group">
+<label>Security Question *</label>
+<select id="regInstSecurityQ">
+<option value="">Select a question</option>
+<option value="city">What city were you born in?</option>
+<option value="school">What was your first school?</option>
+<option value="pet">What was your first pet's name?</option>
+</select>
+<div class="error-message" id="regInstSecurityQError"></div>
+</div>
+<div class="form-group">
+<label>Security Answer *</label>
+<input id="regInstSecurityA" placeholder="Your answer" type="text"/>
+<div class="error-message" id="regInstSecurityAError"></div>
+</div>
+<button class="btn btn-success" onclick="registerInstaller()" style="width: 100%; margin-top: 16px;">Create Account</button>
+<p style="text-align: center; margin-top: 16px; color: #687076; font-size: 14px;">
+Already have an account? <a href="#" onclick="showScreen('installer-login'); return false;" style="color: #22C55E;">Login here</a>
+</p>
+</div>
+</div>
+<!-- INSTALLER FORGOT PASSWORD SCREEN -->
+<div class="screen" id="installer-forgot-password">
+<div style="max-width: 400px; margin: 40px auto;">
+<div style="text-align: center; margin-bottom: 24px;">
+<div style="width: 80px; height: 80px; background: linear-gradient(135deg, #22C55E, #16A34A); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 40px; margin: 0 auto 16px;">🔑</div>
+<h1>Reset Password</h1>
+<p class="subtitle">Installer Portal</p>
+</div>
+<button class="btn btn-secondary" onclick="showScreen('installer-login')" style="margin-bottom: 20px; width: 100%;">
+            ← Back to Login
+          </button>
+<div id="installerForgotStep1">
+<div class="form-group">
+<label>Email</label>
+<input id="installerForgotEmail" placeholder="your@company.com" type="email"/>
+<div class="error-message" id="installerForgotEmailError"></div>
+</div>
+<button class="btn btn-success" onclick="installerForgotStep1()" style="width: 100%;">
+              Next
+            </button>
+</div>
+<div id="installerForgotStep2" style="display: none;">
+<div class="info" style="margin-bottom: 16px;">
+              Answer your security question to reset your password.
+            </div>
+<div class="form-group">
+<label id="installerForgotQuestion">Security Question</label>
+<input id="installerForgotAnswer" placeholder="Your answer" type="text"/>
+<div class="error-message" id="installerForgotAnswerError"></div>
+</div>
+<button class="btn btn-success" onclick="installerForgotStep2()" style="width: 100%;">
+              Verify
+            </button>
+</div>
+<div id="installerForgotStep3" style="display: none;">
+<div class="success" style="margin-bottom: 16px;">
+              ✅ Verified! Set your new password.
+            </div>
+<div class="form-group">
+<label>New Password (min 8 characters)</label>
+<input id="installerForgotNewPassword" placeholder="••••••••" type="password"/>
+<div class="error-message" id="installerForgotNewPasswordError"></div>
+</div>
+<div class="form-group">
+<label>Confirm New Password</label>
+<input id="installerForgotConfirmPassword" placeholder="••••••••" type="password"/>
+<div class="error-message" id="installerForgotConfirmPasswordError"></div>
+</div>
+<button class="btn btn-success" onclick="installerForgotStep3()" style="width: 100%;">
+              Reset Password
+            </button>
+</div>
+</div>
+</div>
+<div class="screen" id="installer-dashboard">
+<h1>Welcome, Installer!</h1>
+<p class="subtitle">Your professional dashboard</p>
+<div class="grid" style="margin-bottom: 24px;">
+<div class="stat-card" style="background: linear-gradient(135deg, #f0fdf4, #dcfce7); border: 1px solid #bbf7d0;">
+<div id="savedCalcsCount" style="font-size: 32px; font-weight: 700;">0</div>
+<div style="font-size: 13px; color: #687076;">Saved Calculations</div>
+</div>
+<div class="stat-card" style="background: linear-gradient(135deg, #f0f9ff, #e0f2fe); border: 1px solid #bae6fd;">
+<div id="jobLeadsCount" style="font-size: 32px; font-weight: 700;">0</div>
+<div style="font-size: 13px; color: #687076;">Job Leads</div>
+</div>
+</div>
+<div class="action-card" onclick="showScreen('installer-calculator')">
+<div style="width: 48px; height: 48px; background: #f0fdf4; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">🧮</div>
+<div style="flex: 1;">
+<div style="font-weight: 600; margin-bottom: 2px;">Professional Calculator</div>
+<div style="font-size: 13px; color: #687076;">With cable lengths &amp; PDF export</div>
+</div>
+<div style="color: #22C55E; font-size: 20px;">→</div>
+</div>
+<div class="action-card" onclick="showScreen('saved-calculations')">
+<div style="width: 48px; height: 48px; background: #f0fdf4; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">💾</div>
+<div style="flex: 1;">
+<div style="font-weight: 600; margin-bottom: 2px;">Saved Calculations</div>
+<div style="font-size: 13px; color: #687076;">Load and manage systems</div>
+</div>
+<div style="color: #22C55E; font-size: 20px;">→</div>
+</div>
+<div class="action-card" onclick="showScreen('job-leads')">
+<div style="width: 48px; height: 48px; background: #f0fdf4; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">📋</div>
+<div style="flex: 1;">
+<div style="font-weight: 600; margin-bottom: 2px;">Job Leads</div>
+<div style="font-size: 13px; color: #687076;">View customer requests</div>
+</div>
+<div style="color: #22C55E; font-size: 20px;">→</div>
+</div>
+<div class="action-card" onclick="egOpenVendorMarketplaceFrom('installer-dashboard')">
+<div style="width: 48px; height: 48px; background: #f0fdf4; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">🏪</div>
+<div style="flex: 1;">
+<div style="font-weight: 600; margin-bottom: 2px;">Browse Vendors</div>
+<div style="font-size: 13px; color: #687076;">Find solar equipment suppliers near you</div>
+</div>
+<div style="color: #22C55E; font-size: 20px;">→</div>
+</div>
+<div class="action-card" onclick="showScreen('installer-profile-view')">
+<div style="width: 48px; height: 48px; background: #f0fdf4; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px;">👤</div>
+<div style="flex: 1;">
+<div style="font-weight: 600; margin-bottom: 2px;">My Profile</div>
+<div style="font-size: 13px; color: #687076;">View and edit your business profile</div>
+</div>
+<div style="color: #22C55E; font-size: 20px;">→</div>
+</div>
+</div>
+<!-- Installer Calculator (detailed) -->
+<div class="screen" id="installer-calculator"><h1>Professional Calculator</h1><p class="subtitle">Full engineering-grade system design</p><div class="embedded-iframe-content" data-embedded-from-iframe="true">
+<header>
+  <div class="logo-sun">☀️
+</div>
+  <div class="logo-text">
+    <h1>Energy Guide</h1>
+    <p>Solar Sizing Calculator</p>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- LEFT: INPUT l4i_PANEL -->
+  <div class="left-panel">
+    <div class="section-label">Add Appliances</div>
+
+    <div class="add-form">
+      <div class="form-grid">
+        <div class="form-field">
+          <label>Appliance Name</label>
+          <input type="text" id="l4i-inp-name" list="l4i-appliance-suggestions" placeholder="e.g. Standing Fan" />
+          <datalist id="l4i-appliance-suggestions"></datalist>
+        </div>
+        <div class="form-field">
+          <label>Watts (W)</label>
+          <input type="number" id="l4i-inp-watts" placeholder="65" min="0" />
+        </div>
+        <div class="form-field">
+          <label>Quantity</label>
+          <input type="number" id="l4i-inp-qty" placeholder="1" min="1" value="1" />
+        </div>
+        <div class="form-field">
+          <label>Hrs/Day</label>
+          <input type="number" id="l4i-inp-hours" placeholder="8" min="0" max="24" step="0.5" />
+        </div>
+        <div class="form-field">
+          <label>Fridge Mode</label>
+          <select id="l4i-inp-fridge-mode">
+            <option value="none" selected>—</option>
+            <option value="inverter_fridge">Inverter Fridge (35%)</option>
+            <option value="normal_fridge">Normal Fridge (50%)</option>
+            <option value="chest_freezer">Chest Freezer (60%)</option>
+          </select>
+        </div>
+      <button class="btn-add" onclick="l4i_addAppliance()">＋ Add Appliance</button>
+    </div>
+
+<div class="presets">
+      <div class="section-label">Quick Add</div>
+      <div class="l4i-preset-chips" id="l4i-preset-chips"></div>
+      <div style="font-size:12px;color:#6b7280;margin-top:8px;">Tap any appliance below to add it quickly.</div>
+    </div>
+
+    <div class="section-label">Your Appliances (<span id="l4i-count">0</span>)</div>
+    <div class="l4i-appliance-list" id="l4i-appliance-list">
+      <div class="empty-state">
+        <div class="icon">🏠</div>
+        <p>No appliances added yet.<br/>Use the form or quick-add chips above.</p>
+      </div>
+    </div>
+
+    <button class="btn-l4i_calculate" id="l4i-calc-btn" onclick="l4i_calculate()" disabled>
+      ⚡ Calculate My Solar System
+    </button>
+  </div>
+
+  <!-- RIGHT: RESULTS l4i_PANEL -->
+  <div class="right-panel">
+    <div class="results-placeholder" id="l4i-placeholder">
+      <div class="big-icon">☀️</div>
+      <p>Add your appliances and tap Calculate to size your solar system.</p>
+    </div>
+
+    <div class="l4i-results" id="l4i-results">
+      <!-- ERROR ALERT (if any) -->
+      <div id="l4i-error-alert" class="l4i-error-alert" style="display:none;"></div>
+
+      <div class="section-label">Load Analysis</div>
+      <div class="result-card">
+        <div class="stat-grid">
+          <div class="stat-item">
+            <div class="stat-label">Total Running Load</div>
+            <div class="stat-value accent" id="l4i-r-watts">—</div>
+            <div class="stat-unit">Watts</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Daily Consumption</div>
+            <div class="stat-value accent" id="l4i-r-kwh">—</div>
+            <div class="stat-unit">kWh / day</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-label">Peak Surge Load</div>
+            <div class="stat-value" id="l4i-r-surge">—</div>
+            <div class="stat-unit">Watts</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="result-section">
+        <div class="section-label">System Voltage & Inverter</div>
+        <div class="result-card">
+          <div class="stat-grid">
+            <div class="stat-item">
+              <div class="stat-label">System DC Voltage</div>
+              <div class="stat-value green" id="l4i-r-voltage">—</div>
+              <div class="stat-unit">Volts DC</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Recommended Inverter</div>
+              <div class="stat-value accent" id="l4i-r-kva">—</div>
+              <div class="stat-unit">kVA Hybrid Inverter</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">Inverter Model</div>
+              <div class="stat-value" id="l4i-r-inv-model" style="font-size:14px;">—</div>
+              <div class="stat-unit">Recommended</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-label">AC Output Current</div>
+              <div class="stat-value" id="l4i-r-ac-amps">—</div>
+              <div class="stat-unit">Amps</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONFLICT BADGE -->
+      <div id="l4i-r-conflict-badge" style="display:none;background:#fff7ed;border:1px solid #fb923c;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#9a3412;line-height:1.6">
+        <strong style="display:block;margin-bottom:4px">⚡ System Voltage Upgraded</strong>
+        <span id="l4i-r-conflict-text"></span>
+      </div>
+
+      <div class="result-section">
+        <div class="section-label">Battery Storage — LiFePO4</div>
+        <div id="l4i-r-battery-options" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px"></div>
+        <div style="margin-top:8px;font-size:11px;color:var(--muted);text-align:center">Tap an option to use it in your system selection</div>
+      </div>
+
+      <div class="result-section">
+        <div class="section-label">Solar Panels</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 12px;">
+          <button type="button" id="l4i-panel-toggle-A" onclick="l4i_egTogglePanel('A')" style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-weight:700;cursor:pointer;">Load Sustain</button>
+          <button type="button" id="l4i-panel-toggle-B" onclick="l4i_egTogglePanel('B')" style="flex:1;padding:10px 12px;border-radius:10px;border:1px solid var(--border);background:var(--panel);color:var(--text);font-weight:700;cursor:pointer;">Full Recharge</button>
+        </div>
+        <div class="result-card">
+          <div class="stat-grid">
+            <div class="stat-item"><div class="stat-label">Total PV Required</div><div class="stat-value accent" id="l4i-r-pv-watts">—</div><div class="stat-unit">Watts</div></div>
+            <div class="stat-item"><div class="stat-label">Number of Panels</div><div class="stat-value green" id="l4i-r-panels">—</div><div class="stat-unit">× 550W panels</div></div>
+            <div class="stat-item"><div class="stat-label">Est. Daily Generation</div><div class="stat-value green" id="l4i-r-gen">—</div><div class="stat-unit">kWh / day</div></div>
+            <div class="stat-item"><div class="stat-label">System Coverage</div><div class="stat-value green" id="l4i-r-coverage">—</div><div class="stat-unit">% of load</div></div>
+          </div>
+          <div class="solar-breakdown" id="l4i-r-solar-breakdown"></div>
+        </div>
+      </div>
+
+      </div><!-- end technical-only -->
+
+      <div class="result-section">
+        <div class="section-label">Cables &amp; Breakers</div>
+        <div class="result-card">
+          <table class="cable-table">
+            <thead><tr><th>Connection</th><th>Cable</th><th>Breaker</th></tr></thead>
+            <tbody id="l4i-r-cables"></tbody>
+          </table>
+        </div>
+      </div>
+
+      
+
+      </div>
+
+    </div><!-- end #results -->
+  </div><!-- end right-panel -->
+</div><!-- end container -->
+    <!-- Installer post-calc actions (hidden until calc runs) -->
+    <div id="eg-view-results-btn" style="display:none; padding: 16px 16px 0;">
+      <div class="grid" style="gap:12px;">
+        <button type="button" class="btn btn-warning" onclick="openInstViewCost()">💰 View Cost</button>
+        <button type="button" class="btn btn-primary" onclick="openInstallerQuoteBuilder()">🧾 Build Quote</button>
+      </div>
+    </div>
+
+</div>
+</div>
+<!-- Installer Results -->
+<div class="screen" id="installer-results">
+<h1>System Design</h1>
+<p class="subtitle">Professional engineering report</p>
+<div class="calc-section">
+<div class="calc-title">📊 Load Analysis</div>
+<div class="grid">
+<div class="result-card" style="text-align: left; padding: 16px;">
+<div class="result-label">Running Power</div>
+<div class="result-value" id="instResRunning" style="font-size: 20px;">-</div>
+</div>
+<div class="result-card" style="text-align: left; padding: 16px;">
+<div class="result-label">Daily Energy</div>
+<div class="result-value" id="instResEnergy" style="font-size: 20px;">-</div>
+</div>
+<div class="result-card" style="text-align: left; padding: 16px;">
+<div class="result-label">Max Surge</div>
+<div class="result-value" id="instResSurge" style="font-size: 20px;">-</div>
+</div>
+<div class="result-card" style="text-align: left; padding: 16px;">
+<div class="result-label">Inverter Size</div>
+<div class="result-value" id="instResInverter" style="font-size: 20px;">-</div>
+</div>
+</div>
+</div>
+<div class="calc-section">
+<div class="calc-title">⚙️ Components</div>
+<div class="success" id="instComponents"></div>
+</div>
+<div class="calc-section">
+<div class="calc-title">🔌 Cables &amp; Protection</div>
+<table>
+<thead>
+<tr>
+<th>Segment</th>
+<th>Length</th>
+<th>Current</th>
+<th>Cable</th>
+<th>V-Drop</th>
+<th>Breaker</th>
+</tr>
+</thead>
+<tbody id="instCablesTable"></tbody>
+</table>
+</div>
+<div class="calc-section">
+<div class="calc-title">⚠️ Safety Checks</div>
+<div id="instSafetyChecks"></div>
+</div>
+<div class="calc-section">
+<div class="calc-title">💰 Total Cost</div>
+<div class="cost-total">
+<span>TOTAL</span>
+<span id="instTotalCost">₦0</span>
+</div>
+</div>
+<div class="grid" style="margin-top: 20px;">
+<button class="btn btn-success" onclick="saveCalculation()">💾 Save</button>
+<button class="btn btn-primary" onclick="exportPDF()">📄 PDF</button>
+</div>
+<div class="grid" style="margin-top: 12px;">
+<button class="btn btn-outline" onclick="instShareWhatsApp()">📱 WhatsApp</button>
+<button class="btn btn-outline" onclick="instCopyToClipboard()">📋 Copy</button>
+</div>
+<div class="grid" style="margin-top: 12px;">
+<button class="btn btn-warning" onclick="openInstViewCost()">💰 View Cost</button>
+<button class="btn btn-warning" onclick="openInstallerQuoteBuilder()">🧾 Build Quote</button>
+</div>
+<div style="margin-top: 12px;">
+<button class="btn btn-primary" onclick="egOpenVendorMarketplaceFrom('installer-results')" style="width:100%;">🏪 Browse Vendors</button>
+</div>
+</div>
+<!-- ===== INSTALLER QUOTE BUILDER ===== -->
+<div class="screen" id="installer-quote-builder">
+<h1>🧾 Quote Builder</h1>
+<p class="subtitle">Build a professional quote for your client</p>
+
+<!-- Section A: Client / Job Snapshot -->
+<div class="calc-section">
+<div class="calc-title">👤 Client / Job Snapshot</div>
+<div id="iqb-client-card" style="font-size:14px;line-height:2;"></div>
+</div>
+
+<!-- Section B: Energy Guide Recommendation (read-only) -->
+<div class="calc-section">
+<div class="calc-title">📊 Energy Guide Recommendation</div>
+<div style="font-size:11px;color:#687076;margin-bottom:10px;font-style:italic;">Platform-calculated values — not editable</div>
+<div id="iqb-rec-card" style="font-size:13px;line-height:2;"></div>
+</div>
+
+<!-- Section C: Installer Adjustments (editable) -->
+<div class="calc-section">
+<div class="calc-title">✏️ Installer Final Quote</div>
+<div style="font-size:11px;color:#687076;margin-bottom:14px;font-style:italic;">Adjust quantities, prices and site costs below</div>
+
+<div style="font-weight:600;font-size:13px;margin-bottom:8px;color:#374151;">Equipment</div>
+<div class="grid" style="margin-bottom:6px;">
+  <div><label style="font-size:12px;color:#687076;">Panel Qty</label><input type="number" id="iqb-panel-qty" class="calc-input" min="1" oninput="recalcQuote()"></div>
+  <div><label style="font-size:12px;color:#687076;">Panel Unit Price (₦)</label><input type="number" id="iqb-panel-price" class="calc-input" min="0" oninput="recalcQuote()"></div>
+</div>
+<div class="grid" style="margin-bottom:6px;">
+  <div><label style="font-size:12px;color:#687076;">Inverter Unit Price (₦)</label><input type="number" id="iqb-inv-price" class="calc-input" min="0" oninput="recalcQuote()"></div>
+  <div><label style="font-size:12px;color:#687076;">Battery Qty</label><input type="number" id="iqb-bat-qty" class="calc-input" min="1" oninput="recalcQuote()"></div>
+</div>
+<div class="grid" style="margin-bottom:14px;">
+  <div><label style="font-size:12px;color:#687076;">Battery Unit Price (₦)</label><input type="number" id="iqb-bat-price" class="calc-input" min="0" oninput="recalcQuote()"></div>
+  <div></div>
+</div>
+
+<div style="font-weight:600;font-size:13px;margin-bottom:8px;color:#374151;">Cable Lengths</div>
+<div class="grid" style="margin-bottom:6px;">
+  <div><label style="font-size:12px;color:#687076;">PV Cable (m)</label><input type="number" id="iqb-pv-len" class="calc-input" min="0" oninput="recalcQuote()"></div>
+  <div><label style="font-size:12px;color:#687076;">Battery Cable (m)</label><input type="number" id="iqb-bat-len" class="calc-input" min="0" oninput="recalcQuote()"></div>
+</div>
+<div class="grid" style="margin-bottom:14px;">
+  <div><label style="font-size:12px;color:#687076;">AC Cable (m)</label><input type="number" id="iqb-ac-len" class="calc-input" min="0" oninput="recalcQuote()"></div>
+  <div></div>
+</div>
+
+<div style="font-weight:600;font-size:13px;margin-bottom:8px;color:#374151;">Site / Commercial</div>
+<div class="grid" style="margin-bottom:6px;">
+  <div><label style="font-size:12px;color:#687076;">Labour (₦)</label><input type="number" id="iqb-labour" class="calc-input" min="0" oninput="recalcQuote()"></div>
+  <div><label style="font-size:12px;color:#687076;">Transportation (₦)</label><input type="number" id="iqb-transport" class="calc-input" min="0" oninput="recalcQuote()"></div>
+</div>
+<div class="grid" style="margin-bottom:14px;">
+  <div><label style="font-size:12px;color:#687076;">Mounting / Accessories (₦)</label><input type="number" id="iqb-mounting" class="calc-input" min="0" oninput="recalcQuote()"></div>
+  <div><label style="font-size:12px;color:#687076;">Discount (₦)</label><input type="number" id="iqb-discount" class="calc-input" min="0" oninput="recalcQuote()"></div>
+</div>
+
+<div><label style="font-size:12px;color:#687076;">Installer Note</label>
+<textarea id="iqb-note" style="width:100%;padding:10px;border:1px solid #e5e7eb;border-radius:8px;font-size:13px;resize:vertical;min-height:60px;box-sizing:border-box;" placeholder="Any additional notes for the client..."></textarea></div>
+</div>
+
+<!-- Section D: Cost Breakdown -->
+<div class="calc-section">
+<div class="calc-title">💰 Cost Breakdown</div>
+<div id="iqb-breakdown" style="font-size:13px;"></div>
+<div style="font-size:11px;color:#687076;margin-top:12px;padding:10px;background:#f9fafb;border-radius:8px;">
+  <strong>Reference only (not added to final total):</strong><br>
+  <span id="iqb-breaker-ref"></span><br>
+  <em>Breaker selection and final installation materials remain subject to site verification.</em>
+</div>
+</div>
+
+<!-- Section E: Final Quote Summary -->
+<div class="calc-section">
+<div class="calc-title">🏁 Final Quote Summary</div>
+<div id="iqb-summary"></div>
+<div style="font-size:11px;color:#687076;margin-top:10px;font-style:italic;">
+  Final quantities and pricing are subject to site verification.
+</div>
+</div>
+
+<!-- Section F: Actions -->
+<div class="grid" style="margin-top:20px;">
+<button class="btn btn-primary" onclick="downloadQuoteBuilderPDF()">📄 Download PDF</button>
+<button class="btn btn-success" onclick="shareQuoteBuilderWhatsApp()">📱 Share on WhatsApp</button>
+</div>
+<div style="margin-top:12px;">
+<button class="btn btn-outline" onclick="backFromInstallerQuoteBuilder()" style="width:100%;">← Back</button>
+</div>
+</div>
+<!-- Saved Calculations -->
+<div class="screen" id="saved-calculations">
+<h1>Saved Calculations</h1>
+<p class="subtitle">Your calculation library</p>
+<div class="calc-section" id="savedCalcsList"></div>
+<button class="btn btn-secondary" onclick="showScreen('installer-dashboard')">← Back</button>
+</div>
+<!-- Job Leads -->
+<div class="screen" id="job-leads">
+<h1>Job Leads</h1>
+<p class="subtitle">Customer requests</p>
+<div class="calc-section" id="jobLeadsList"></div>
+<button class="btn btn-secondary" onclick="showScreen('installer-dashboard')">← Back</button>
+</div>
+
+<!-- ===== COMPLETE INSTALLER PROFILE (post-Google-login) ===== -->
+<div class="screen" id="complete-installer-profile">
+<div style="text-align:center;margin-bottom:24px;">
+<div style="width:72px;height:72px;background:linear-gradient(135deg,#22C55E,#16A34A);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 16px;">🛠</div>
+<h1>Complete Your Profile</h1>
+<p class="subtitle">A few details before you access your dashboard</p>
+</div>
+<div class="info" style="margin-bottom:20px;">These fields are required to start receiving job leads in your area.</div>
+<div class="form-group"><label>Full Name *</label><input id="cipFullName" placeholder="John Adeyemi" type="text"/><div class="error-message" id="cipFullNameError"></div></div>
+<div class="form-group"><label>Business Name *</label><input id="cipBusiness" placeholder="Energy Solutions Ltd" type="text"/><div class="error-message" id="cipBusinessError"></div></div>
+<div class="form-group"><label>Phone Number *</label><input id="cipPhone" placeholder="+234 800 000 0000" type="tel"/><div class="error-message" id="cipPhoneError"></div></div>
+<div class="grid">
+<div class="form-group"><label>State *</label><select id="cipState"></select><div class="error-message" id="cipStateError"></div></div>
+<div class="form-group"><label>City / Area *</label><input id="cipCity" placeholder="Ikeja" type="text"/><div class="error-message" id="cipCityError"></div></div>
+</div>
+<div class="form-group"><label>WhatsApp Number</label><input id="cipWhatsapp" placeholder="+234 800 000 0000" type="tel"/></div>
+<button class="btn btn-success" onclick="saveCompleteInstallerProfile()" style="width:100%;margin-top:8px;">Save & Continue →</button>
+</div>
+
+<!-- ===== COMPLETE VENDOR PROFILE (post-Google-login) ===== -->
+<div class="screen" id="complete-vendor-profile">
+<div style="text-align:center;margin-bottom:24px;">
+<div style="width:72px;height:72px;background:linear-gradient(135deg,#F59E0B,#D97706);border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:36px;margin:0 auto 16px;">🏪</div>
+<h1>Complete Your Profile</h1>
+<p class="subtitle">A few details before you access your dashboard</p>
+</div>
+<div class="info" style="margin-bottom:20px;">These fields are required to start receiving matched vendor requests.</div>
+<div class="form-group"><label>Full Name *</label><input id="cvpFullName" placeholder="Amaka Okafor" type="text"/><div class="error-message" id="cvpFullNameError"></div></div>
+<div class="form-group"><label>Business Name *</label><input id="cvpBusiness" placeholder="Solar Tech Ltd" type="text"/><div class="error-message" id="cvpBusinessError"></div></div>
+<div class="form-group"><label>Phone Number *</label><input id="cvpPhone" placeholder="+234 800 000 0000" type="tel"/><div class="error-message" id="cvpPhoneError"></div></div>
+<div class="grid">
+<div class="form-group"><label>State *</label><select id="cvpState"></select><div class="error-message" id="cvpStateError"></div></div>
+<div class="form-group"><label>City / Area *</label><input id="cvpCity" placeholder="Ikeja" type="text"/><div class="error-message" id="cvpCityError"></div></div>
+</div>
+<div class="form-group"><label>WhatsApp Number</label><input id="cvpWhatsapp" placeholder="+234 800 000 0000" type="tel"/></div>
+<button class="btn btn-warning" onclick="saveCompleteVendorProfile()" style="width:100%;margin-top:8px;">Save & Continue →</button>
+</div>
+
+<!-- ===== INSTALLER PROFILE VIEW ===== -->
+<div class="screen" id="installer-profile-view">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+<div style="width:48px;height:48px;background:linear-gradient(135deg,#22C55E,#16A34A);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;">🛠</div>
+<div><h1 style="font-size:22px;">My Profile</h1><p class="subtitle" style="margin:0;">Installer account</p></div>
+</div>
+<button class="btn btn-secondary" onclick="showScreen('installer-dashboard')" style="margin-bottom:20px;">← Back to Dashboard</button>
+<div id="installerProfileViewContent"></div>
+</div>
+
+<!-- ===== VENDOR PROFILE VIEW ===== -->
+<div class="screen" id="vendor-profile-view">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+<div style="width:48px;height:48px;background:linear-gradient(135deg,#F59E0B,#D97706);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;">🏪</div>
+<div><h1 style="font-size:22px;">My Profile</h1><p class="subtitle" style="margin:0;">Vendor account</p></div>
+</div>
+<button class="btn btn-secondary" onclick="showScreen('vendor-dashboard')" style="margin-bottom:20px;">← Back to Dashboard</button>
+<div id="vendorProfileViewContent"></div>
+</div>
+
+<!-- ===== INSTALLER PROFILE (edit from dashboard) ===== -->
+<div class="screen" id="installer-profile">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+<div style="width:48px;height:48px;background:linear-gradient(135deg,#22C55E,#16A34A);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;">🛠</div>
+<div><h1 style="font-size:22px;">My Profile</h1><p class="subtitle" style="margin:0;">Installer account</p></div>
+</div>
+<button class="btn btn-secondary" onclick="showScreen('installer-dashboard')" style="margin-bottom:20px;">← Back to Dashboard</button>
+<div id="instProfileStatus" class="info" style="margin-bottom:16px;display:none;"></div>
+
+<div style="font-weight:600;font-size:13px;color:#22C55E;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;">Required Info</div>
+<div class="form-group"><label>Full Name *</label><input id="ipFullName" placeholder="John Adeyemi" type="text"/></div>
+<div class="form-group"><label>Business Name *</label><input id="ipBusiness" placeholder="Energy Solutions Ltd" type="text"/></div>
+<div class="form-group"><label>Phone Number *</label><input id="ipPhone" placeholder="+234 800 000 0000" type="tel"/></div>
+<div class="grid">
+<div class="form-group"><label>State *</label><select id="ipState"></select></div>
+<div class="form-group"><label>City / Area *</label><input id="ipCity" placeholder="Ikeja" type="text"/></div>
+</div>
+
+<div style="font-weight:600;font-size:13px;color:#687076;margin:20px 0 12px;text-transform:uppercase;letter-spacing:.5px;">Service Coverage</div>
+<div class="grid">
+<div class="form-group"><label>Service State</label><select id="ipServiceState"></select></div>
+<div class="form-group"><label>Service City / Area</label><input id="ipServiceCity" placeholder="Ikeja, VI..." type="text"/></div>
+</div>
+<div class="grid">
+<div class="form-group"><label>Min System (kVA)</label><input id="ipMinKva" min="0.5" placeholder="1" step="0.5" type="number"/></div>
+<div class="form-group"><label>Max System (kVA)</label><input id="ipMaxKva" min="1" placeholder="20" step="0.5" type="number"/></div>
+</div>
+<div class="form-group"><label>Battery Types</label>
+<div style="display:flex;gap:16px;margin-top:6px;">
+<label style="display:flex;align-items:center;gap:6px;font-weight:400;cursor:pointer;"><input id="ipLithium" type="checkbox"/> Lithium</label>
+<label style="display:flex;align-items:center;gap:6px;font-weight:400;cursor:pointer;"><input id="ipTubular" type="checkbox"/> Tubular</label>
+</div></div>
+<div class="form-group"><label>Market Type</label>
+<select id="ipMarket"><option value="">Select...</option><option value="residential">Residential</option><option value="commercial">Commercial</option><option value="both">Both</option></select>
+</div>
+<div class="form-group"><label>Years of Experience</label>
+<select id="ipYears"><option value="">Select...</option><option value="0-1">Less than 1 year</option><option value="1-3">1 – 3 years</option><option value="3-5">3 – 5 years</option><option value="5-10">5 – 10 years</option><option value="10+">10+ years</option></select>
+</div>
+
+<div style="font-weight:600;font-size:13px;color:#687076;margin:20px 0 12px;text-transform:uppercase;letter-spacing:.5px;">Optional Details</div>
+<div class="form-group"><label>WhatsApp Number</label><input id="ipWhatsapp" placeholder="+234 800 000 0000" type="tel"/></div>
+<div class="form-group"><label>CAC Registration Number</label><input id="ipCac" placeholder="RC-000000" type="text"/></div>
+<div class="form-group"><label>CAC Document (PDF/Image)</label><input accept=".pdf,image/*" id="ipCacDoc" type="file"/><div style="font-size:12px;color:#687076;margin-top:4px;" id="ipCacDocStatus"></div></div>
+<div class="form-group"><label>Business Description</label><textarea id="ipDesc" placeholder="Brief description of your services..."></textarea></div>
+
+<button class="btn btn-success" onclick="saveInstallerProfile()" style="width:100%;margin-top:8px;">💾 Save Profile</button>
+</div>
+
+<!-- ===== VENDOR PROFILE (edit from dashboard) ===== -->
+<div class="screen" id="vendor-profile">
+<div style="display:flex;align-items:center;gap:12px;margin-bottom:20px;">
+<div style="width:48px;height:48px;background:linear-gradient(135deg,#F59E0B,#D97706);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;">🏪</div>
+<div><h1 style="font-size:22px;">My Profile</h1><p class="subtitle" style="margin:0;">Vendor account</p></div>
+</div>
+<button class="btn btn-secondary" onclick="showScreen('vendor-dashboard')" style="margin-bottom:20px;">← Back to Dashboard</button>
+<div id="vendorProfileStatus" class="info" style="margin-bottom:16px;display:none;"></div>
+
+<div style="font-weight:600;font-size:13px;color:#F59E0B;margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px;">Required Info</div>
+<div class="form-group"><label>Full Name *</label><input id="vpFullName" placeholder="Amaka Okafor" type="text"/></div>
+<div class="form-group"><label>Business Name *</label><input id="vpBusiness" placeholder="Solar Tech Ltd" type="text"/></div>
+<div class="form-group"><label>Phone Number *</label><input id="vpPhone" placeholder="+234 800 000 0000" type="tel"/></div>
+<div class="grid">
+<div class="form-group"><label>State *</label><select id="vpState"></select></div>
+<div class="form-group"><label>City / Area *</label><input id="vpCity" placeholder="Ikeja" type="text"/></div>
+</div>
+
+<div style="font-weight:600;font-size:13px;color:#687076;margin:20px 0 12px;text-transform:uppercase;letter-spacing:.5px;">Products & Coverage</div>
+<div class="form-group"><label>Delivery Coverage</label><input id="vpDelivery" placeholder="Lagos, Ogun, Oyo... or Nationwide" type="text"/></div>
+<div class="form-group"><label>Product Categories</label>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:6px;">
+<label style="display:flex;align-items:center;gap:6px;font-weight:400;cursor:pointer;"><input id="vpPanels" type="checkbox"/> Solar Panels</label>
+<label style="display:flex;align-items:center;gap:6px;font-weight:400;cursor:pointer;"><input id="vpInverters" type="checkbox"/> Inverters</label>
+<label style="display:flex;align-items:center;gap:6px;font-weight:400;cursor:pointer;"><input id="vpLithium" type="checkbox"/> Lithium Batteries</label>
+<label style="display:flex;align-items:center;gap:6px;font-weight:400;cursor:pointer;"><input id="vpTubular" type="checkbox"/> Tubular Batteries</label>
+<label style="display:flex;align-items:center;gap:6px;font-weight:400;cursor:pointer;"><input id="vpAccessories" type="checkbox"/> Accessories</label>
+</div></div>
+<div class="form-group"><label>Offer Installation?</label>
+<select id="vpOffersInstall"><option value="">Select...</option><option value="yes">Yes</option><option value="no">No</option></select>
+</div>
+
+<div style="font-weight:600;font-size:13px;color:#687076;margin:20px 0 12px;text-transform:uppercase;letter-spacing:.5px;">Optional Details</div>
+<div class="form-group"><label>Shop / Business Address</label><input id="vpAddress" placeholder="123 Allen Avenue, Ikeja, Lagos" type="text"/></div>
+<div class="form-group"><label>WhatsApp Number</label><input id="vpWhatsapp" placeholder="+234 800 000 0000" type="tel"/></div>
+<div class="form-group"><label>Brands Carried</label><input id="vpBrands" placeholder="Luminous, Felicity, Victron..." type="text"/></div>
+<div class="form-group"><label>CAC Registration Number</label><input id="vpCac" placeholder="RC-000000" type="text"/></div>
+<div class="form-group"><label>CAC Document (PDF/Image)</label><input accept=".pdf,image/*" id="vpCacDoc" type="file"/><div style="font-size:12px;color:#687076;margin-top:4px;" id="vpCacDocStatus"></div></div>
+<div class="form-group"><label>Business Description</label><textarea id="vpDesc" placeholder="Brief description of your business..."></textarea></div>
+
+<button class="btn btn-warning" onclick="saveVendorProfile()" style="width:100%;margin-top:8px;">💾 Save Profile</button>
+</div>
+
+</div>
+</div>
+<div id="userAuthModal" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.66); z-index:1200; align-items:center; justify-content:center; padding:16px;">
+  <div style="width:min(100%,420px); background:#ffffff; border-radius:24px; padding:20px; border:1px solid #dbe4ee; box-shadow:0 25px 60px rgba(0,0,0,0.22); max-height:90vh; overflow:auto;">
+    <div style="display:flex; justify-content:space-between; gap:12px; align-items:flex-start; margin-bottom:16px;">
+      <div>
+        <div id="userAuthModalTitle" style="font-size:22px; font-weight:700; color:#111827;">Save this system</div>
+        <div id="userAuthModalText" style="font-size:13px; color:#687076; margin-top:4px;">Create a free account to keep this result and access it later.</div>
+      </div>
+      <button onclick="closeUserAuthModal()" style="border:none; background:none; font-size:24px; line-height:1; cursor:pointer; color:#687076;">×</button>
+    </div>
+
+    <div style="display:flex; gap:8px; margin-bottom:16px;">
+      <button id="userAuthTabSignup" class="btn btn-primary small-btn" onclick="switchUserAuthMode('signup')" style="flex:1;">Create Account</button>
+      <button id="userAuthTabSignin" class="btn btn-outline small-btn" onclick="switchUserAuthMode('signin')" style="flex:1;">Sign In</button>
+    </div>
+
+    <div class="form-group" id="userAuthFullNameGroup">
+      <label style="color:#334155; font-weight:700;">Full Name</label>
+      <input id="userAuthFullName" type="text" placeholder="Your full name" />
+    </div>
+    <div class="form-group">
+      <label style="color:#334155; font-weight:700;">Email</label>
+      <input id="userAuthEmail" type="email" placeholder="you@example.com" />
+    </div>
+    <div class="form-group">
+      <label style="color:#334155; font-weight:700;">Password</label>
+      <div style="position:relative;">
+        <input id="userAuthPassword" type="password" placeholder="••••••••" style="padding-right:45px;" />
+        <button type="button" onclick="togglePasswordVisibility('userAuthPassword','userAuthPasswordIcon')" style="position:absolute; right:10px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; font-size:20px; padding:0;">
+          <span id="userAuthPasswordIcon">👁️</span>
+        </button>
+      </div>
+    </div>
+
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:16px;">
+      <button class="btn btn-primary" id="userAuthSubmitBtn" onclick="handleUserAuthSubmit()">Create Free Account</button>
+      <button class="btn btn-outline" onclick="signInWithGoogle('user')">Continue with Google</button>
+      <button class="btn btn-secondary" onclick="closeUserAuthModal()">Maybe Later</button>
+    </div>
+  </div>
+</div>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+<div class="spinner"></div>
+<div class="loading-text" id="loadingText">Processing...</div>
+</div>
+
+<!-- ======================================================
+     JAVASCRIPT — loaded in dependency order
+     ====================================================== -->
+
+<!-- 1. Calculator Engines (portal-scoped, no inter-dependencies) -->
+<script src="js/calc-user.js"></script>
+<script src="js/calc-vendor.js"></script>
+<script src="js/calc-installer.js"></script>
+
+<!-- 2. Supabase Data Layer (calculations + vendor products cloud sync) -->
+
+<!-- 2. Supabase Data Layer (calculations + vendor products cloud sync) -->
+<script src="js/db.js"></script>
+
+<!-- 3. Core Platform (auth, routing, DB, leads, WhatsApp, offer builder) -->
+<script src="js/platform.js"></script>
+
+<!-- 4. Alternative user calc variant (egU) -->
+<script src="js/calc-user-alt.js"></script>
+
+<!-- 5. Patches (applied after platform is loaded) -->
+<script src="js/patch-show-screen.js"></script>
+<script src="js/patch-sync-globals.js"></script>
+<script src="js/patch-scroll.js"></script>
+<script src="js/patch-scroll-restore.js"></script>
+
+</body>
+</html>
