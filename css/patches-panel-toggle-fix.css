@@ -1,0 +1,286 @@
+/* EG-VERSION: v304-fix */
+  /* keep stray donor build-offer launcher from appearing above unrelated screens */
+  body:not(.screen-vendor-calculator) #vendorCalcBuildOfferBtn { display:none !important; }
+
+
+  /* ===== Installer/Vendor portal dark-theme cleanup ===== */
+  #installer-dashboard .action-card,
+  #vendor-dashboard .action-card,
+  #installer-dashboard .stat-card,
+  #vendor-dashboard .stat-card,
+  #installer-dashboard .action-card > div,
+  #vendor-dashboard .action-card > div,
+  #installer-dashboard .stat-card > div,
+  #vendor-dashboard .stat-card > div {
+    background: #0f1722 !important;
+    color: #f8fafc !important;
+    border-color: #243244 !important;
+  }
+  #installer-dashboard .action-card [style*="color: #687076"],
+  #installer-dashboard .action-card [style*="color:#687076"],
+  #vendor-dashboard .action-card [style*="color: #687076"],
+  #vendor-dashboard .action-card [style*="color:#687076"],
+  #installer-dashboard .stat-card [style*="color:"],
+  #vendor-dashboard .stat-card [style*="color:"] {
+    color: #cbd5e1 !important;
+  }
+  #installer-dashboard .action-card [style*="background:"],
+  #vendor-dashboard .action-card [style*="background:"] {
+    background: #111827 !important;
+    color: #f8fafc !important;
+  }
+  #installer-dashboard .action-card [style*="font-size: 20px"],
+  #vendor-dashboard .action-card [style*="font-size: 20px"] {
+    color: #7dd3fc !important;
+  }
+
+  #installer-marketplace .calc-section,
+  #vendor-marketplace .calc-section,
+  #installer-quote-builder .calc-section,
+  #vendor-offer-builder .calc-section {
+    background: #0b1118 !important;
+    border-color: #243244 !important;
+    color: #f8fafc !important;
+  }
+  #installer-marketplace .calc-title,
+  #vendor-marketplace .calc-title,
+  #installer-quote-builder .calc-title,
+  #vendor-offer-builder .calc-title,
+  #installer-marketplace h1, #installer-marketplace h2, #installer-marketplace h3,
+  #vendor-marketplace h1, #vendor-marketplace h2, #vendor-marketplace h3,
+  #installer-quote-builder h1, #installer-quote-builder h2, #installer-quote-builder h3,
+  #vendor-offer-builder h1, #vendor-offer-builder h2, #vendor-offer-builder h3,
+  #installer-marketplace p, #vendor-marketplace p,
+  #installer-quote-builder p, #vendor-offer-builder p,
+  #installer-quote-builder label, #vendor-offer-builder label,
+  #installer-marketplace label, #vendor-marketplace label {
+    color: #f8fafc !important;
+  }
+  #installer-marketplace .subtitle,
+  #vendor-marketplace .subtitle,
+  #installer-quote-builder .subtitle,
+  #vendor-offer-builder .subtitle,
+  #installer-quote-builder [style*="color:#6b7280"],
+  #installer-quote-builder [style*="color: #6b7280"],
+  #vendor-offer-builder [style*="color:#6b7280"],
+  #vendor-offer-builder [style*="color: #6b7280"],
+  #installer-quote-builder [style*="color:#687076"],
+  #installer-quote-builder [style*="color: #687076"],
+  #vendor-offer-builder [style*="color:#687076"],
+  #vendor-offer-builder [style*="color: #687076"],
+  #installer-quote-builder [style*="color:#9ca3af"],
+  #installer-quote-builder [style*="color: #9ca3af"],
+  #vendor-offer-builder [style*="color:#9ca3af"],
+  #vendor-offer-builder [style*="color: #9ca3af"] {
+    color: #94a3b8 !important;
+  }
+
+  #installer-marketplace select,
+  #vendor-marketplace select,
+  #installer-quote-builder input,
+  #installer-quote-builder select,
+  #installer-quote-builder textarea,
+  #vendor-offer-builder input,
+  #vendor-offer-builder select,
+  #vendor-offer-builder textarea {
+    background: #0f1722 !important;
+    color: #f8fafc !important;
+    border: 1px solid #334155 !important;
+  }
+
+  #iqb-client-card, #iqb-rec-card,
+  #vob-client-card, #vob-rec-card,
+  #iqb-summary > div, #vob-summary > div,
+  #iqb-breakdown > div, #vob-breakdown > div,
+  #installer-marketplace .info,
+  #vendor-marketplace .info {
+    background: #0f1722 !important;
+    color: #f8fafc !important;
+    border: 1px solid #243244 !important;
+  }
+  #iqb-client-card *, #iqb-rec-card *,
+  #vob-client-card *, #vob-rec-card *,
+  #iqb-summary *, #vob-summary *,
+  #iqb-breakdown *, #vob-breakdown *,
+  #installer-marketplace .info *,
+  #vendor-marketplace .info * {
+    color: inherit !important;
+  }
+  #iqb-summary [style*="color:#16a34a"],
+  #iqb-summary [style*="color: #16a34a"],
+  #vob-summary [style*="color:#16a34a"],
+  #vob-summary [style*="color: #16a34a"] {
+    color: #22c55e !important;
+  }
+  #iqb-summary [style*="color:#dc2626"],
+  #iqb-summary [style*="color: #dc2626"],
+  #vob-summary [style*="color:#dc2626"],
+  #vob-summary [style*="color: #dc2626"] {
+    color: #f87171 !important;
+  }
+
+  #installer-marketplace [style*="background:#f9fafb"],
+  #installer-marketplace [style*="background: #f9fafb"],
+  #installer-marketplace [style*="background:#f0fdf4"],
+  #installer-marketplace [style*="background: #f0fdf4"],
+  #vendor-marketplace [style*="background:#f9fafb"],
+  #vendor-marketplace [style*="background: #f9fafb"],
+  #vendor-marketplace [style*="background:#f0fdf4"],
+  #vendor-marketplace [style*="background: #f0fdf4"],
+  #installer-quote-builder [style*="background:#f9fafb"],
+  #installer-quote-builder [style*="background: #f9fafb"],
+  #installer-quote-builder [style*="background:#f0fdf4"],
+  #installer-quote-builder [style*="background: #f0fdf4"],
+  #vendor-offer-builder [style*="background:#f9fafb"],
+  #vendor-offer-builder [style*="background: #f9fafb"],
+  #vendor-offer-builder [style*="background:#f0fdf4"],
+  #vendor-offer-builder [style*="background: #f0fdf4"] {
+    background: #0f1722 !important;
+    color: #f8fafc !important;
+    border-color: #243244 !important;
+  }
+  #installer-marketplace [style*="background:#f9fafb"] *,
+  #installer-marketplace [style*="background: #f9fafb"] *,
+  #installer-marketplace [style*="background:#f0fdf4"] *,
+  #installer-marketplace [style*="background: #f0fdf4"] *,
+  #vendor-marketplace [style*="background:#f9fafb"] *,
+  #vendor-marketplace [style*="background: #f9fafb"] *,
+  #vendor-marketplace [style*="background:#f0fdf4"] *,
+  #vendor-marketplace [style*="background: #f0fdf4"] *,
+  #installer-quote-builder [style*="background:#f9fafb"] *,
+  #installer-quote-builder [style*="background: #f9fafb"] *,
+  #installer-quote-builder [style*="background:#f0fdf4"] *,
+  #installer-quote-builder [style*="background: #f0fdf4"] *,
+  #vendor-offer-builder [style*="background:#f9fafb"] *,
+  #vendor-offer-builder [style*="background: #f9fafb"] *,
+  #vendor-offer-builder [style*="background:#f0fdf4"] *,
+  #vendor-offer-builder [style*="background: #f0fdf4"] * {
+    color: inherit !important;
+  }
+
+
+  /* fix20: dark theme for profile views/edit screens and builder cards */
+  #installer-profile-view, #vendor-profile-view,
+  #installer-profile, #vendor-profile,
+  #installer-quote-builder, #vendor-offer-builder {
+    background: #030712 !important;
+    color: #f8fafc !important;
+  }
+  #installer-profile-view .subtitle, #vendor-profile-view .subtitle,
+  #installer-profile .subtitle, #vendor-profile .subtitle,
+  #installer-quote-builder .subtitle, #vendor-offer-builder .subtitle {
+    color: #94a3b8 !important;
+  }
+  #installer-profile-view #installerProfileViewContent > div,
+  #vendor-profile-view #vendorProfileViewContent > div,
+  #installer-quote-builder #iqb-client-card,
+  #installer-quote-builder #iqb-rec-card,
+  #vendor-offer-builder #vob-client-card,
+  #vendor-offer-builder #vob-rec-card,
+  #installer-quote-builder #iqb-summary > div,
+  #installer-quote-builder #iqb-breakdown > div,
+  #vendor-offer-builder #vob-summary > div,
+  #vendor-offer-builder #vob-breakdown > div,
+  #installer-profile-view [style*="background:#fff"],
+  #installer-profile-view [style*="background: #fff"],
+  #installer-profile-view [style*="background:#fafafa"],
+  #installer-profile-view [style*="background: #fafafa"],
+  #vendor-profile-view [style*="background:#fff"],
+  #vendor-profile-view [style*="background: #fff"],
+  #vendor-profile-view [style*="background:#fafafa"],
+  #vendor-profile-view [style*="background: #fafafa"],
+  #installer-quote-builder [style*="background:#fff"],
+  #installer-quote-builder [style*="background: #fff"],
+  #installer-quote-builder [style*="background:#f9fafb"],
+  #installer-quote-builder [style*="background: #f9fafb"],
+  #installer-quote-builder [style*="background:#f0fdf4"],
+  #installer-quote-builder [style*="background: #f0fdf4"],
+  #vendor-offer-builder [style*="background:#fff"],
+  #vendor-offer-builder [style*="background: #fff"],
+  #vendor-offer-builder [style*="background:#f9fafb"],
+  #vendor-offer-builder [style*="background: #f9fafb"],
+  #vendor-offer-builder [style*="background:#f0fdf4"],
+  #vendor-offer-builder [style*="background: #f0fdf4"] {
+    background: #0f172a !important;
+    color: #f8fafc !important;
+    border-color: #243244 !important;
+    box-shadow: none !important;
+  }
+  #installer-profile-view [style*="color:#111827"],
+  #installer-profile-view [style*="color: #111827"],
+  #installer-profile-view [style*="color:#374151"],
+  #installer-profile-view [style*="color: #374151"],
+  #vendor-profile-view [style*="color:#111827"],
+  #vendor-profile-view [style*="color: #111827"],
+  #vendor-profile-view [style*="color:#374151"],
+  #vendor-profile-view [style*="color: #374151"],
+  #installer-quote-builder [style*="color:#111827"],
+  #installer-quote-builder [style*="color: #111827"],
+  #installer-quote-builder [style*="color:#374151"],
+  #installer-quote-builder [style*="color: #374151"],
+  #vendor-offer-builder [style*="color:#111827"],
+  #vendor-offer-builder [style*="color: #111827"],
+  #vendor-offer-builder [style*="color:#374151"],
+  #vendor-offer-builder [style*="color: #374151"] {
+    color: #f8fafc !important;
+  }
+  #installer-profile-view [style*="color:#687076"],
+  #installer-profile-view [style*="color: #687076"],
+  #installer-profile-view [style*="color:#6b7280"],
+  #installer-profile-view [style*="color: #6b7280"],
+  #vendor-profile-view [style*="color:#687076"],
+  #vendor-profile-view [style*="color: #687076"],
+  #vendor-profile-view [style*="color:#6b7280"],
+  #vendor-profile-view [style*="color: #6b7280"],
+  #installer-quote-builder [style*="color:#687076"],
+  #installer-quote-builder [style*="color: #687076"],
+  #installer-quote-builder [style*="color:#6b7280"],
+  #installer-quote-builder [style*="color: #6b7280"],
+  #installer-quote-builder [style*="color:#9ca3af"],
+  #installer-quote-builder [style*="color: #9ca3af"],
+  #vendor-offer-builder [style*="color:#687076"],
+  #vendor-offer-builder [style*="color: #687076"],
+  #vendor-offer-builder [style*="color:#6b7280"],
+  #vendor-offer-builder [style*="color: #6b7280"],
+  #vendor-offer-builder [style*="color:#9ca3af"],
+  #vendor-offer-builder [style*="color: #9ca3af"] {
+    color: #94a3b8 !important;
+  }
+  #installer-profile-view .btn-secondary,
+  #vendor-profile-view .btn-secondary {
+    background: #0b1730 !important;
+    color: #f8fafc !important;
+    border-color: #243244 !important;
+  }
+  #installer-profile-view input, #installer-profile-view select, #installer-profile-view textarea,
+  #vendor-profile-view input, #vendor-profile-view select, #vendor-profile-view textarea,
+  #installer-quote-builder input, #installer-quote-builder select, #installer-quote-builder textarea,
+  #vendor-offer-builder input, #vendor-offer-builder select, #vendor-offer-builder textarea {
+    background: #071224 !important;
+    color: #f8fafc !important;
+    border: 1px solid #243244 !important;
+  }
+  #installer-profile-view span[style*="background:#ECFDF3"],
+  #vendor-profile-view span[style*="background:#ECFDF3"],
+  #installer-profile-view span[style*="background:#F3F4F6"],
+  #vendor-profile-view span[style*="background:#F3F4F6"],
+  #installer-profile-view span[style*="background:#F0FDF4"],
+  #vendor-profile-view span[style*="background:#F0FDF4"],
+  #installer-profile-view span[style*="background:#FEF3C7"],
+  #vendor-profile-view span[style*="background:#FEF3C7"],
+  #installer-profile-view span[style*="background:#FFF7ED"],
+  #vendor-profile-view span[style*="background:#FFF7ED"] {
+    filter: saturate(0.85) brightness(0.9);
+  }
+
+
+/* === 2026-03-27: Show full solar panel mode controls for user + vendor calculators === */
+#user-calculator .technical-only,
+#vendor-calculator .technical-only {
+  display: block !important;
+}
+
+#user-calculator .simple-portal-note,
+#vendor-calculator .simple-portal-note {
+  margin-bottom: 16px;
+}
