@@ -1,0 +1,19 @@
+{
+  "name": "Energy Guide",
+  "short_name": "Energy Guide",
+  "description": "Nigeria's complete solar sizing and installation marketplace.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
